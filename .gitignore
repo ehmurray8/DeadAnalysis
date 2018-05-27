@@ -9,6 +9,9 @@ api_key.py
 # C extensions
 *.so
 
+# PyCharm
+.idea/
+
 # Distribution / packaging
 .Python
 build/
