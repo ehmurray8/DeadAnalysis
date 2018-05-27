@@ -1,4 +1,4 @@
-import numpy as np
+from collections import defaultdict
 import calendar
 from typing import Callable, List, Tuple, Dict
 from functools import wraps
@@ -21,7 +21,7 @@ class MusicData(object):
         self.tours = []  # type: List[Tour]
         self.concerts = []  # type: List[Concert]
 
-    def songs_by_day(self, select_num: int) -> List[List[str]]:
+    def songs_by_day(self, select_num: int) -> Tuple[List[List[str]], List[float]]:
         """
         Return a list of lists for each day there is song data for and selects the top select_num for
         each day.
@@ -41,9 +41,9 @@ class MusicData(object):
         for sbd in song_counts_by_day:
             songs_perc.append(float(sbd) / float(num_songs))
 
-        return unique_songs_by(select_num, songs_by_day, calendar.day_name)
+        return unique_songs_by(select_num, songs_by_day, calendar.day_name), songs_perc
 
-    def songs_by_month(self, select_num: int) -> List[List[str]]:
+    def songs_by_month(self, select_num: int) -> Tuple[List[List[str]], List[float]]:
         """
         Return a list of lists for each month there is song data for and selects the top select_num for
         each month.
@@ -66,9 +66,9 @@ class MusicData(object):
         for sbd in song_counts_by_month:
             songs_perc.append(float(sbd) / float(num_songs))
 
-        return unique_songs_by(select_num, songs_by_month, months)
+        return unique_songs_by(select_num, songs_by_month, months), songs_perc
 
-    def songs_by_year(self, select_num: int) -> List[List[str]]:
+    def songs_by_year(self, select_num: int) -> Tuple[List[List[str]], List[float]]:
         """
         Return a list of lists for each year there is song data for and selects the top select_num for
         each year.
@@ -90,7 +90,14 @@ class MusicData(object):
         for sbd in song_counts_by_year:
             songs_perc.append(float(sbd) / float(num_songs))
 
-        return unique_songs_by(select_num, songs_by_year, years)
+        return unique_songs_by(select_num, songs_by_year, years), songs_perc
+
+    def top_songs(self, select_num: int):
+        song_cont = SongCont()
+        for concert in self.concerts:
+            for song in [song for s in concert.sets + [concert.encores] for song in s]:
+                song_cont.add(song)
+        return song_cont.sorted_top_keys(select_num)
 
     @concerts_by
     def concerts_by_location(self, coordinates: List[Tuple[float, float]], concert: Concert):
@@ -140,22 +147,18 @@ class MusicData(object):
 
 class SongCont(object):
     def __init__(self):
-        self.freq_dict = {}
+        self.freq_dict = defaultdict(int)
         self.all = []  # type: List[Song]
 
     def add(self, song: Song):
         self.all.append(song)
-        if song.name in self.freq_dict:
-            old_val = self.freq_dict[song.name]
-            self.freq_dict[song.name] = old_val + 1
-        else:
-            self.freq_dict[song.name] = 1
+        self.freq_dict[song.name] += 1
 
     def sorted_list(self):
         return [(key, self.freq_dict[key]) for key in sorted(self.freq_dict, key=self.freq_dict.get, reverse=True)]
 
     def sorted_top_keys(self, num):
-        return [key[0] for key in self.sorted_list()[:num]]
+        return [key[0] for key in self.sorted_list() if key[0] != ""][:num]
 
     def keys_set(self):
         return set(self.freq_dict.keys())
@@ -175,8 +178,7 @@ def unique_songs_by(unique_num: int, songs_by: List[SongCont], elems: List) -> L
     for songs in songs_by:
         songs_by_lists.append(songs.sorted_top_keys(unique_num))
 
-    unique_songs = np.array(songs_by_lists)
-    unique_songs = unique_songs.ravel()
+    unique_songs = [song for song_list in songs_by_lists for song in song_list]
 
     unique_songs_set = set(unique_songs)
     unique_songs_list = [[] for _ in range(len(elems))]
@@ -184,4 +186,4 @@ def unique_songs_by(unique_num: int, songs_by: List[SongCont], elems: List) -> L
         for i, sdb in enumerate(songs_by_lists):
             if uniqs in sdb:
                 unique_songs_list[i].append(uniqs)
-    return songs_by_lists
+    return [[song for song in song_list if song != ""] for song_list in songs_by_lists]

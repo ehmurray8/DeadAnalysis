@@ -4,7 +4,8 @@ import get_song_data as gsd
 from collections import defaultdict
 import pycountry
 
-if __name__ == "__main__":
+
+def create_graph_code():
     colorscale = ["#f7fbff", "#d2e3f3", "#9ecae1", "#57a0ce", "#2171b5", "#0b4083", "#08306b"]
 
     music = gsd.get_pickled_song_data()
@@ -21,10 +22,10 @@ if __name__ == "__main__":
     bins = [0] + [max(bin) for bin in bins]
 
     fig = ff.create_choropleth(fips=list(frequencies.keys()), values=list(frequencies.values()),
-        binning_endpoints=bins, #  colorscale=colorscale,
-        show_state_data=True, show_hover=True, centroid_marker={'opacity': 0}, asp=2.9,
-        title='Grateful Dead Concerts by Location', legend_title='Number of Concerts')
-    py.iplot(fig, filename='Dead Shows (States)')
+                               binning_endpoints=bins, #  colorscale=colorscale,
+                               show_state_data=True, show_hover=True, centroid_marker={'opacity': 0}, asp=2.9,
+                               title='Grateful Dead Concerts by Location', legend_title='Number of Concerts')
+    plot_county = py.iplot(fig, filename='Grateful Dead Shows by County')
 
     frequencies = defaultdict(int)
     for code in music.concerts_by_state_codes():
@@ -36,10 +37,10 @@ if __name__ == "__main__":
                  marker=dict(line=dict (color='rgb(255,255,255)', width=2)), colorbar=dict(title="Number of Concerts"))]
 
     layout = dict(title='Grateful Dead Concerts by State', geo=dict(scope='usa', projection=dict(type='albers usa'),
-                  showlakes = True, lakecolor='rgb(255, 255, 255)'))
+                                                                    showlakes = True, lakecolor='rgb(255, 255, 255)'))
 
     fig = dict(data=data, layout=layout)
-    py.iplot(fig, filename='Dead Shows by State')
+    plot_state = py.iplot(fig, filename='Grateful Dead Shows by State')
 
     frequencies = defaultdict(int)
     for code in music.concerts_by_country_codes():
@@ -53,7 +54,12 @@ if __name__ == "__main__":
                  colorbar = dict(autotick=False, title='Number of Shows'))]
 
     layout = dict(title='Grateful Dead Shows by Country', geo=dict(showframe=True, showcoastlines=True,
-                  projection = dict(type='Mercator')))
+                                                                   projection = dict(type='Mercator')))
 
     fig = dict(data=data, layout=layout)
-    py.iplot(fig, validate=False, filename='Grateful Dead Shows World')
+    plot_world = py.iplot(fig, validate=False, filename='Grateful Dead Shows World')
+    return plot_county.embed_code, plot_state.embed_code, plot_world.embed_code
+
+
+if __name__ == "__main__":
+    create_graph_code()
