@@ -15,8 +15,8 @@
     {% for day, song_list, percent in day_song_zip_info %}
       <h3>{{ day }} ({{ percent }})</h3>
       <ol>
-        {% for song in song_list %}
-          <li>{{ song }}</li>
+        {% for song, num in song_list %}
+          <li>{{ song }} - {{ num }}</li>
         {% endfor %}
       </ol>
     {% endfor %}
@@ -24,22 +24,30 @@
       {% for month, song_list, percent in month_song_zip_info %}
         <h3>{{ month }} ({{ percent }})</h3>
         <ol>
-          {% for song in song_list %}
-            <li>{{ song }}</li>
+          {% for song, num in song_list %}
+            <li>{{ song }} - {{ num }}</li>
           {% endfor %}
         </ol>
       {% endfor %}
     <h2>Songs by Year</h2>
-      {% for year, song_list, percent in year_song_zip_info %}
-        <h3>{{ year }} ({{ percent }})</h3>
-        <ol>
-          {% for song in song_list %}
-            <li>{{ song }}</li>
-          {% endfor %}
-        </ol>
-      {% endfor %}
-      {{ county_graph }}
-      {{ state_graph }}
-      {{ world_graph }}
+    {% for year, song_list, percent in year_song_zip_info %}
+      <h3>{{ year }} ({{ percent }})</h3>
+      <ol>
+        {% for song, num in song_list %}
+          <li>{{ song }} - {{ num }}</li>
+        {% endfor %}
+      </ol>
+    {% endfor %}
+    {{ county_graph }}
+    <br/>
+    {{ state_graph }}
+    <br/>
+    {{ world_graph }}
+    <br/>
+    <h2>All Songs</h2>
+    {{ all_songs }}
+    <br/>
+    <h2>All Covered Songs</h2>
+    {{ all_covers }}
   </body>
 </html>

@@ -60,16 +60,22 @@ def get_song_data():
                 music.tours.append(Tour(tour))
             sets = []
             encores = []
-            orig_artist = ARTIST
             for s in setlist["sets"]["set"]:
                 songs = []
                 for song in s["song"]:
                     if "cover" in song:
                         orig_artist = song["cover"]["name"]
-                    if "encore" in s:
-                        encores.append(Song(ARTIST, orig_artist, song["name"]))
                     else:
-                        songs.append(Song(ARTIST, orig_artist, song["name"]))
+                        orig_artist = ARTIST
+                    if song["name"] not in music.songs:
+                        song = Song(ARTIST, orig_artist, song["name"])
+                        music.songs[song.name] = song
+                    else:
+                        song = music.songs[song["name"]]
+                    if "encore" in s:
+                        encores.append(song)
+                    else:
+                        songs.append(song)
                 if "encore" not in s:
                     sets.append(songs)
 

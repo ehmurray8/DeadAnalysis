@@ -7,7 +7,7 @@ import map_test
 if __name__ == "__main__":
     # gsd.get_song_data()
     music = gsd.get_pickled_song_data()
-    file_loader = FileSystemLoader(".")
+    file_loader = FileSystemLoader("templates")
     env = Environment(loader=file_loader)
     template = env.get_template("output_template.html")
     kwargs = {}
@@ -28,8 +28,9 @@ if __name__ == "__main__":
     kwargs["year_song_zip_info"] = year_song_zip_info
     top_songs = music.top_songs(50)
     kwargs["top_songs"] = len(top_songs)
-    kwargs["top_songs_list"] = top_songs
+    kwargs["top_songs_list"] = ["{} - {}".format(song, num) for song, num in top_songs]
     kwargs["county_graph"], kwargs["state_graph"], kwargs["world_graph"] = map_test.create_graph_code()
+    kwargs["all_songs"] , kwargs["all_covers"] = music.all_song_info()
     output = template.render(**kwargs)
-    with open("output.html", "w") as f:
+    with open(r"html\output.html", "w") as f:
         f.write(output)
