@@ -4,7 +4,7 @@ import http.client
 import pickle
 import urllib.parse as urlp
 import calendar
-from datetime
+from datetime import datetime
 from api_key import API_KEY
 
 conn = http.client.HTTPSConnection("api.setlist.fm")
@@ -22,6 +22,7 @@ def get_song_data(artist):
     total = 2
     i = 1
     print(artist)
+    pickle_artist = None
     while i <= total:
         url_artist = urlp.quote_plus(artist)
         pickle_artist = artist.replace(" ", "_")
@@ -44,13 +45,12 @@ def get_song_data(artist):
                         covers.add((song["cover"]["name"], song["name"]))
         i+=1
 
-    with open(os.path.join("pickle_data", "{}_songs.pickle".format(pickle_artist)),
-            "wb") as f:
-        pickle.dump(songs, f)
+    if pickle_artist is not None:
+        with open(os.path.join("pickle_data", "{}_songs.pickle".format(pickle_artist)), "wb") as f:
+            pickle.dump(songs, f)
 
-    with open(os.path.join("pickle_data", "{}_covers.pickle".format(pickle_artist)),
-            "wb") as f:
-        pickle.dump(covers, f)
+        with open(os.path.join("pickle_data", "{}_covers.pickle".format(pickle_artist)), "wb") as f:
+            pickle.dump(covers, f)
 
 def get_pickled_songs(artist, songs_list, covers_list):
     pickle_artist = artist.replace(" ", "_")
@@ -75,12 +75,12 @@ class Location():
 class Song():
     def __init__(self, loc, date, artist, name):
         self.location = loc
-        self.date = datetime.datetime.strptime(date, "%d-%m-%Y").date()
+        self.date = datetime.strptime(date, "%d-%m-%Y").date()
         self.artist = artist
         self.name = name
 
     def get_weekday(self):
-        calendar.day_name[self.date.weekday()]
+        return calendar.day_name[self.date.weekday()]
 
 
 class FreqDict():

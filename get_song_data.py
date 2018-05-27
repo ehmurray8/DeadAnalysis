@@ -4,30 +4,31 @@ import http.client
 import pickle
 import urllib.parse as urlp
 from api_key import API_KEY
-from config import ARTISTS, SELECTED_COVERS
+from config import ARTISTS
 import song
+from song import MusicData
 
 
 HEADERS = {
     'x-api-key': API_KEY,
     'accept': "application/json",
     'cache-control': "no-cache",
-    'postman-token': "44195584-3280-9850-105d-87b18ab76395"
 }
 
 def get_song_data():
     music = song.MusicData()
     conn = http.client.HTTPSConnection("api.setlist.fm")
+    census_conn = http.client.HTTPSConnection("geo.fcc.gov")
+    conn.connect()
+    census_conn.connect()
     for artist in ARTISTS:
         print(artist)
         total = 2
         i = 1
         while i <= total:
             url_artist = urlp.quote_plus(artist)
-            pickle_artist = artist.replace(" ", "_")
             print("Page {}".format(i))
-            conn.request("GET", "/rest/1.0/search/setlists?artistName={}&p={}"
-                        .format(url_artist, i), headers=HEADERS)
+            conn.request("GET", "/rest/1.0/search/setlists?artistName={}&p={}" .format(url_artist, i), headers=HEADERS)
             res = conn.getresponse()
             data = res.read()
             main_data = json.loads(data.decode("utf-8"))
@@ -45,9 +46,18 @@ def get_song_data():
                 state = "N/A"
                 if "state" in venue["city"]:
                     state = venue["city"]["state"]
-
-                loc = song.Location(venue["city"]["name"], state, venue["city"]["country"]["name"], 
-                                    venue["name"], venue["city"]["coords"])
+                coords = venue["city"]["coords"]
+                census_conn.request("GET", "/api/census/area?lat={}&lon={}&format=json".format(coords["lat"], coords["long"]))
+                response = census_conn.getresponse().read()
+                response_json = json.loads(response.decode("utf-8"))
+                try:
+                    fips = response_json["results"][0]["county_fips"]
+                except (IndexError, AttributeError):
+                    print("ERROR: {}".format(coords))
+                    fips = "NA"
+                loc = song.Location(venue["city"]["name"], state, venue["city"]["stateCode"],
+                                    venue["city"]["country"]["name"], venue["city"]["country"]["code"],
+                                    venue["name"], coords, fips)
 
                 for music_set in slist["sets"]["set"]:
                     for sng in music_set["song"]:
@@ -62,7 +72,7 @@ def get_song_data():
         pickle.dump(music, f)
 
 
-def get_pickled_song_data():
+def get_pickled_song_data() -> MusicData:
     with open(os.path.join("pickle_data", "all_song_data.pickle"), "rb") as f:
         music = pickle.load(f)
     return music
