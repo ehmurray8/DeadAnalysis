@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Grateful Dead Analysis</title>
+  </head>
+  <body>
+    <h1>Analysis of the Grateful Dead</h1>
+    <h2>Top {{top_songs}} Songs</h2>
+    <ol>
+      {% for song in top_songs_list %}
+        <li>{{ song }}</li>
+      {% endfor %}
+    </ol>
+    <h2>Songs by Day</h2>
+    {% for day, song_list, percent in day_song_zip_info %}
+      <h3>{{ day }} ({{ percent }})</h3>
+      <ol>
+        {% for song in song_list %}
+          <li>{{ song }}</li>
+        {% endfor %}
+      </ol>
+    {% endfor %}
+    <h2>Songs by Month</h2>
+      {% for month, song_list, percent in month_song_zip_info %}
+        <h3>{{ month }} ({{ percent }})</h3>
+        <ol>
+          {% for song in song_list %}
+            <li>{{ song }}</li>
+          {% endfor %}
+        </ol>
+      {% endfor %}
+    <h2>Songs by Year</h2>
+      {% for year, song_list, percent in year_song_zip_info %}
+        <h3>{{ year }} ({{ percent }})</h3>
+        <ol>
+          {% for song in song_list %}
+            <li>{{ song }}</li>
+          {% endfor %}
+        </ol>
+      {% endfor %}
+      {{ county_graph }}
+      {{ state_graph }}
+      {{ world_graph }}
+  </body>
+</html>
