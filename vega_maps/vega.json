@@ -19,7 +19,7 @@
           "value": "data"
         }
       ],
-      "url": "vincent_map_data\\world-countries.topo.json"
+      "url": "https://github.com/wrobstory/vincent_map_data/blob/master/world-countries.topo.json"
     }
   ],
   "height": 500,
