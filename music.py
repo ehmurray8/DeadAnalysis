@@ -100,7 +100,7 @@ class MusicData(object):
         for concert in self.concerts:
             for song in [song for s in concert.sets + [concert.encores] for song in s]:
                 song_cont.add(song)
-        return song_cont.all_songs(), song_cont.all_covered_songs()
+        return song_cont.all_songs(), song_cont.all_covered_songs(), song_cont.all_originals()
 
     @concerts_by
     def concerts_by_location(self, coordinates: List[Tuple[float, float]], concert: Concert):
@@ -175,6 +175,10 @@ class SongCont(object):
     def all_songs(self):
         return ["{} - {}".format(key[0].name, key[1]) for key in self.sorted_list()
                 if key[0].name != "" and key[0].name != "Drums" and key[0].name != "Space"]
+
+    def all_originals(self):
+        return ["{} - {}".format(key[0].name, key[1]) for key in self.sorted_list()
+                if key[0].name != "" and key[0].name != "Drums" and key[0].name != "Space" and not key[0].is_cover()]
 
     def keys_set(self):
         return set(self.freq_dict.keys())

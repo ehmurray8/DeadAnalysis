@@ -30,7 +30,10 @@ if __name__ == "__main__":
     kwargs["top_songs"] = len(top_songs)
     kwargs["top_songs_list"] = ["{} - {}".format(song, num) for song, num in top_songs]
     kwargs["county_graph"], kwargs["state_graph"], kwargs["world_graph"] = map_test.create_graph_code()
-    kwargs["all_songs"] , kwargs["all_covers"] = music.all_song_info()
+    kwargs["all_songs"] , kwargs["all_covers"], kwargs["all_originals"] = music.all_song_info()
+    kwargs["num_songs"] = len(kwargs["all_songs"])
+    kwargs["num_covers"] = len(kwargs["all_covers"])
+    kwargs["num_originals"] = len(kwargs["all_originals"])
     output = template.render(**kwargs)
     with open(r"html\output.html", "w") as f:
         f.write(output)

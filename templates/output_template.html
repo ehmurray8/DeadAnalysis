@@ -44,10 +44,24 @@
     <br/>
     {{ world_graph }}
     <br/>
-    <h2>All Songs</h2>
-    {{ all_songs }}
+    <h2>All Songs - {{ num_songs }}</h2>
+    <ol>
+      {% for song in all_songs %}
+        <li>{{ song }}</li>
+      {% endfor %}
+    </ol>
     <br/>
-    <h2>All Covered Songs</h2>
-    {{ all_covers }}
+    <h2>All Original Songs - {{ num_originals }}</h2>
+    <ol>
+      {% for song in all_originals %}
+        <li>{{ song }}</li>
+      {% endfor %}
+    </ol>
+    <h2>All Covered Songs - {{ num_covers }}</h2>
+    <ol>
+      {% for song in all_covers %}
+        <li>{{ song }}</li>
+      {% endfor %}
+    </ol>
   </body>
 </html>
