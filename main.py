@@ -40,5 +40,5 @@ if __name__ == "__main__":
     output = template.render(**kwargs)
     if not os.path.isdir(r"html\{}".format(ARTIST)):
         os.mkdir(r"html\{}".format(ARTIST))
-    with open(r"html\{}\output.html".format(ARTIST), "wb") as f:
-        f.write(output.encode("utf-8"))
+    with open(r"html\{}\output.html".format(ARTIST), "w", encoding="utf-8") as f:
+        f.write(output)
