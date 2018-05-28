@@ -12,7 +12,11 @@ api_key.py
 # PyCharm
 .idea/
 
+# Output Html Files
 html/
+
+# Pickle Data
+pickle_data/
 
 # Distribution / packaging
 .Python
