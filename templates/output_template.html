@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Grateful Dead Analysis</title>
+    <title>{{ artist }} Analysis</title>
   </head>
   <body>
-    <h1>Analysis of the Grateful Dead</h1>
+    <h1>Analysis of the {{ artist }}</h1>
     <h2>Top {{top_songs}} Songs</h2>
     <ol>
       {% for song in top_songs_list %}

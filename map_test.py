@@ -3,6 +3,7 @@ import plotly.figure_factory as ff
 import get_song_data as gsd
 from collections import defaultdict
 import pycountry
+from config import ARTIST
 
 
 def create_graph_code():
@@ -20,12 +21,13 @@ def create_graph_code():
     size = 5
     bins = [sorted_concert_nums[i:i+int(length/size)] for i in range(0, length, int(length/size))]
     bins = [0] + [max(bin) for bin in bins]
+    bins = list(sorted(set(bins)))
 
     fig = ff.create_choropleth(fips=list(frequencies.keys()), values=list(frequencies.values()),
                                binning_endpoints=bins, #  colorscale=colorscale,
                                show_state_data=True, show_hover=True, centroid_marker={'opacity': 0}, asp=2.9,
-                               title='Grateful Dead Concerts by Location', legend_title='Number of Concerts')
-    plot_county = py.iplot(fig, filename='Grateful Dead Shows by County')
+                               title='{} Concerts by Location'.format(ARTIST), legend_title='Number of Concerts')
+    plot_county = py.iplot(fig, filename='{} Shows by County'.format(ARTIST))
 
     frequencies = defaultdict(int)
     for code in music.concerts_by_state_codes():
@@ -36,11 +38,11 @@ def create_graph_code():
                  locationmode='USA-states', # text = df['text'],
                  marker=dict(line=dict (color='rgb(255,255,255)', width=2)), colorbar=dict(title="Number of Concerts"))]
 
-    layout = dict(title='Grateful Dead Concerts by State', geo=dict(scope='usa', projection=dict(type='albers usa'),
+    layout = dict(title='{} Concerts by State'.format(ARTIST), geo=dict(scope='usa', projection=dict(type='albers usa'),
                                                                     showlakes = True, lakecolor='rgb(255, 255, 255)'))
 
     fig = dict(data=data, layout=layout)
-    plot_state = py.iplot(fig, filename='Grateful Dead Shows by State')
+    plot_state = py.iplot(fig, filename='{} Shows by State'.format(ARTIST))
 
     frequencies = defaultdict(int)
     for code in music.concerts_by_country_codes():
@@ -53,11 +55,11 @@ def create_graph_code():
                  autocolorscale=True, reversescale=True, marker=dict(line=dict(color='rgb(180,180,180)', width=0.5)),
                  colorbar = dict(autotick=False, title='Number of Shows'))]
 
-    layout = dict(title='Grateful Dead Shows by Country', geo=dict(showframe=True, showcoastlines=True,
+    layout = dict(title='{} Shows by Country'.format(ARTIST), geo=dict(showframe=True, showcoastlines=True,
                                                                    projection = dict(type='Mercator')))
 
     fig = dict(data=data, layout=layout)
-    plot_world = py.iplot(fig, validate=False, filename='Grateful Dead Shows World')
+    plot_world = py.iplot(fig, validate=False, filename='{} Shows World'.format(ARTIST))
     return plot_county.embed_code, plot_state.embed_code, plot_world.embed_code
 
 

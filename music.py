@@ -2,7 +2,6 @@ from collections import defaultdict
 from typing import Callable, List, Tuple, Dict
 from functools import wraps
 from song import Venue, Song, Tour, Concert
-from config import START_YEAR
 
 def concerts_by(function: Callable) -> Callable:
     @wraps(function)
@@ -20,6 +19,12 @@ class MusicData(object):
         self.tours = []  # type: List[Tour]
         self.concerts = []  # type: List[Concert]
         self.songs = {}  # type: Dict[str: Song]
+
+    def start_year(self):
+        return self.concerts[-1].date.year
+
+    def last_year(self):
+        return self.concerts[0].date.year
 
     def songs_by_day(self, select_num: int) -> Tuple[List[List[Tuple[str, float]]], List[float]]:
         """
@@ -73,13 +78,14 @@ class MusicData(object):
         :param select_num: the top number of songs to select by year
         :return: the top select_num song names by year
         """
-        song_counts_by_year = [0] * 53
-        songs_by_year = [SongCont() for _ in range(53)]
+        num_years = self.last_year() - self.start_year() + 1
+        song_counts_by_year = [0] * num_years
+        songs_by_year = [SongCont() for _ in range(num_years)]
         for concert in self.concerts:
-            song_counts_by_year[concert.date.year - START_YEAR] += sum([len(s) for s in concert.sets]) + \
-                                                                   len(concert.encores)
+            i = concert.date.year - self.start_year()
+            song_counts_by_year[i] += sum([len(s) for s in concert.sets]) + len(concert.encores)
             for song in [song for s in concert.sets + [concert.encores] for song in s]:
-                songs_by_year[concert.date.year - START_YEAR].add(song)
+                songs_by_year[i].add(song)
 
         num_songs = sum(song_counts_by_year)
         songs_perc = []

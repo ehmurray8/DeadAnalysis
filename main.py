@@ -1,6 +1,7 @@
+import os
 from jinja2 import Environment, FileSystemLoader
 import datetime
-from config import START_YEAR
+from config import ARTIST
 import get_song_data as gsd
 import map_test
 
@@ -22,7 +23,8 @@ if __name__ == "__main__":
     songs_by_year, percents = music.songs_by_year(10)
     percents = ["{}%".format(round(perc * 100, 2)) for perc in percents]
     year_song_zip_info = []
-    for year, song_list, percent in zip(range(START_YEAR, datetime.datetime.now().year+1, 1), songs_by_year, percents):
+    for year, song_list, percent in zip(range(music.start_year(), datetime.datetime.now().year+1, 1),
+                                        songs_by_year, percents):
         if percent != "0.0%":
             year_song_zip_info.append((year, song_list, percent))
     kwargs["year_song_zip_info"] = year_song_zip_info
@@ -34,6 +36,9 @@ if __name__ == "__main__":
     kwargs["num_songs"] = len(kwargs["all_songs"])
     kwargs["num_covers"] = len(kwargs["all_covers"])
     kwargs["num_originals"] = len(kwargs["all_originals"])
+    kwargs["artist"] = ARTIST
     output = template.render(**kwargs)
-    with open(r"html\output.html", "w") as f:
-        f.write(output)
+    if not os.path.isdir(r"html\{}".format(ARTIST)):
+        os.mkdir(r"html\{}".format(ARTIST))
+    with open(r"html\{}\output.html".format(ARTIST), "wb") as f:
+        f.write(output.encode("utf-8"))

@@ -56,8 +56,11 @@ def get_song_data():
                 venue_obj = Venue(venue["name"], city["name"], state, state_code, country["name"],
                                   country["code"], coordinates["lat"], coordinates["long"], fips)
                 music.venues[venue_id] = venue_obj
-            if tour is not None and tour not in music.tours:
-                music.tours.append(Tour(tour))
+            if tour is not None and tour not in [tour.name for tour in music.tours]:
+                tour = Tour(tour)
+                music.tours.append(tour)
+            elif tour is not None:
+                tour = [t for t in music.tours if t.name == tour][0]
             sets = []
             encores = []
             for s in setlist["sets"]["set"]:
@@ -83,7 +86,7 @@ def get_song_data():
             music.concerts.append(concert)
         i+=1
 
-    with open(os.path.join("pickle_data", "song_data.pickle"), "wb") as f:
+    with open(os.path.join("pickle_data", "{}_song_data.pickle".format(ARTIST)), "wb") as f:
         pickle.dump(music, f)
 
 
@@ -93,13 +96,12 @@ def get_fips(census_conn, coords) -> str:
     response_json = json.loads(response.decode("utf-8"))
     try:
         fips = response_json["results"][0]["county_fips"]
-    except (IndexError, AttributeError):
-        print("ERROR: {}".format(coords))
+    except (IndexError, AttributeError):  # Non-US Concert
         fips = "NA"
     return fips
 
 
 def get_pickled_song_data() -> MusicData:
-    with open(os.path.join("pickle_data", "song_data.pickle"), "rb") as f:
-        music = pickle.load(f)
+    with open(os.path.join("pickle_data", "{}_song_data.pickle".format(ARTIST)), "rb") as f:
+        music = pickle.load(f)  # type: MusicData
     return music
