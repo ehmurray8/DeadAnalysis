@@ -12,6 +12,8 @@ api_key.py
 # PyCharm
 .idea/
 
+html/
+
 # Distribution / packaging
 .Python
 build/
