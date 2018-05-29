@@ -11,8 +11,17 @@
       <li>Average Number of Sets: {{ num_sets }}</li>
       {% for i, set_length in set_lengths %}
         <li>Set {{ i + 1 }}: {{ set_length }} songs</li>
+         <ul>
+          <li>Number of unique set {{ i + 1}}s: {{ num_solo_sets[i] }}</li>
+          <li>Number of duplicate set {{ i + 1}}s: {{ num_multiple_sets[i] }}</li>
+          <li>Number of </li>
+         </ul>
       {% endfor %}
     <li>Average Encore Length: {{ encore_length }}</li>
+      <ul>
+        <li>Number of unique encores: {{ num_solo_encores }}</li>
+        <li>Number of duplicate encores: {{ num_multiple_encores }}</li>
+      </ul>
     </ul>
     <h2>Top {{top_songs}} Songs</h2>
     <ol>

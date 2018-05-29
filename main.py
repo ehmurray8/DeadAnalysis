@@ -24,6 +24,13 @@ if __name__ == "__main__":
     kwargs = {}
     set_lengths, encore_length, common_sets, common_encores, num_solo_sets,  num_multiple_sets,\
         num_solo_encore, num_multiple_encores, common_set_songs_ordered  = music.basic_concert_info()
+
+    # TODO: Add common_sets, common_encores, and common_set_songs_ordered to the template
+
+    kwargs["num_solo_sets"] = num_solo_sets
+    kwargs["num_multiple_sets"] = num_multiple_sets
+    kwargs["num_solo_encores"] = num_solo_encore
+    kwargs["num_multiple_encores"] = num_multiple_encores
     kwargs["num_sets"] = len(set_lengths)
     kwargs["set_lengths"] = enumerate(set_lengths)
     kwargs["encore_length"] = encore_length

@@ -51,6 +51,8 @@ class MusicData(object):
             if len(concert.encores):
                 encore_length.append(len(concert.encores))
                 encores[concert.encores] += 1
+            else:
+                encore_length.append(0)
 
         common_sets = [[] for _ in range(usual_num_sets)]
         num_multiple_encores = 0
