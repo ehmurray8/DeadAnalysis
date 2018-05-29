@@ -6,6 +6,14 @@
   </head>
   <body>
     <h1>Analysis of the {{ artist }}</h1>
+    <h2>Typical Concert</h2>
+    <ul>
+      <li>Average Number of Sets: {{ num_sets }}</li>
+      {% for i, set_length in set_lengths %}
+        <li>Set {{ i + 1 }}: {{ set_length }} songs</li>
+      {% endfor %}
+    <li>Average Encore Length: {{ encore_length }}</li>
+    </ul>
     <h2>Top {{top_songs}} Songs</h2>
     <ol>
       {% for song in top_songs_list %}

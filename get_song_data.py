@@ -6,7 +6,7 @@ import urllib.parse as urlp
 from api_key import API_KEY
 from config import ARTIST
 from music import MusicData
-from song import Venue, Tour, Concert, Song
+from song import Venue, Tour, Concert, Song, Set
 
 
 HEADERS = {
@@ -65,6 +65,7 @@ def get_song_data():
                 music.tours.append(tour)
             elif tour is not None:
                 tour = [t for t in music.tours if t.name == tour][0]
+
             sets = []
             encores = []
             for s in setlist["sets"]["set"]:
@@ -84,8 +85,9 @@ def get_song_data():
                     else:
                         songs.append(song)
                 if "encore" not in s:
-                    sets.append(songs)
+                    sets.append(Set(songs))
 
+            encores = Set(encores)
             concert = Concert(date, venue_id, sets, encores, tour)
             music.concerts.append(concert)
         i+=1

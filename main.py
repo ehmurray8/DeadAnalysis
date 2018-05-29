@@ -22,6 +22,11 @@ if __name__ == "__main__":
     env = Environment(loader=file_loader)
     template = env.get_template("output_template.jinja2")
     kwargs = {}
+    set_lengths, encore_length, common_sets, common_encores, num_solo_sets,  num_multiple_sets,\
+        num_solo_encore, num_multiple_encores, common_set_songs_ordered  = music.basic_concert_info()
+    kwargs["num_sets"] = len(set_lengths)
+    kwargs["set_lengths"] = enumerate(set_lengths)
+    kwargs["encore_length"] = encore_length
     songs_by_day, percents = music.songs_by_day(TOP_SONGS_BY_DAY)
     uniques = unique_songs(songs_by_day)
     songs_by_day = [(song[0], song[1], True if song[0] in uniques else False)

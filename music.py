@@ -3,6 +3,7 @@ from typing import Callable, List, Tuple, Dict
 from functools import wraps
 from song import Venue, Song, Tour, Concert
 from map_helper import create_graph_code
+from config import NUM_TOP_CONCERTS, NUM_TOP_ENCORES, NUM_TOP_SET_SONGS
 
 def concerts_by(function: Callable) -> Callable:
     @wraps(function)
@@ -32,6 +33,57 @@ class MusicData(object):
 
     def last_year(self):
         return self.concerts[0].date.year
+
+    def basic_concert_info(self):
+        num_sets = []
+        for concert in self.concerts:
+            num_sets.append(len(concert.sets))
+        usual_num_sets = max(set(num_sets), key=num_sets.count)
+        set_lengths = [[] for _ in range(usual_num_sets)]
+        encore_length = []
+        sets = [defaultdict(int) for _ in range(usual_num_sets)]
+        encores = defaultdict(int)
+        for concert in self.concerts:
+            if len(concert.sets) == usual_num_sets:
+                for i, s in enumerate(concert.sets):
+                    set_lengths[i].append(len(s))
+                    sets[i][s] += 1
+            if len(concert.encores):
+                encore_length.append(len(concert.encores))
+                encores[concert.encores] += 1
+
+        common_sets = [[] for _ in range(usual_num_sets)]
+        num_multiple_encores = 0
+        num_solo_encore = 0
+        num_multiple_sets = [0 for _ in range(usual_num_sets)]
+        num_solo_sets = [0 for _ in range(usual_num_sets)]
+        common_set_songs = [defaultdict(int) for _ in range(usual_num_sets)]
+        for i, s in enumerate(sets):
+            common_sets[i] = [(key, s[key]) for key in sorted(s, key=s.get, reverse=True)]
+            for key, value in common_sets[i]:
+                if value > 1:
+                    num_multiple_sets[i] += 1
+                else:
+                    num_solo_sets[i] += 1
+                for song in key:
+                    common_set_songs[i][song] += 1
+            common_sets[i] = common_sets[i][:NUM_TOP_CONCERTS]
+        common_set_songs_ordered = [[] for _ in range(usual_num_sets)]
+        for i, ss in enumerate(common_set_songs):
+            common_set_songs_ordered[i] = [(key, ss[key])
+                                   for key in sorted(ss, key=ss.get,
+                                                     reverse=True)][:NUM_TOP_SET_SONGS]
+        common_encores = [(key, encores[key]) for key in sorted(encores, key=encores.get, reverse=True)]
+        for key, value in common_encores:
+            if value > 1:
+                num_multiple_encores += 1
+            else:
+                num_solo_encore += 1
+
+        set_lengths = [round(float(sum(sl))/float(len(sl)), 2) for sl in set_lengths]
+        encore_length = float(sum(encore_length))/float(len(encore_length))
+        return set_lengths, round(encore_length, 2), common_sets, common_encores[:NUM_TOP_ENCORES], num_solo_sets,\
+               num_multiple_sets, num_solo_encore, num_multiple_encores, common_set_songs_ordered
 
     def songs_by_day(self, select_num: int) -> Tuple[List[List[Tuple[str, float]]], List[float]]:
         """

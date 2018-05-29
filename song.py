@@ -13,6 +13,28 @@ class Tour(object):
         return self.name
 
 
+class Set(object):
+    def __init__(self, elems=list()):
+        self.elements = elems
+
+    def __eq__(self, other):
+        if len(self.elements) == len(other.elements):
+            for e, oe in zip(self.elements, other.elements):
+                if e != oe:
+                    return False
+        else:
+            return False
+        return True
+
+    def __len__(self):
+        return len(self.elements)
+
+    def __hash__(self):
+        return hash("".join([str(e) for e in self.elements]))
+
+    def __iter__(self):
+        return (x for x in self.elements)
+
 class Song(object):
     def __init__(self, artist: str, orig_artist: str, name: str):
         self.artist = artist
@@ -28,9 +50,15 @@ class Song(object):
     def __repr__(self):
         return self.name
 
+    def __eq__(self, other):
+        return self.name == other.name
+
+    def __hash__(self):
+        return hash(self.name)
+
 
 class Concert(object):
-    def __init__(self, date: str, venue_id: str, sets: List[List[Song]], encores: List[Song], tour_id: Optional[Tour]):
+    def __init__(self, date: str, venue_id: str, sets: List[Set], encores: Set, tour_id: Optional[Tour]):
         self.date = datetime.datetime.strptime(date, "%d-%m-%Y")
         self.venue_id = venue_id
         self.sets = sets
@@ -64,4 +92,7 @@ class Venue(object):
 
     def __str__(self):
         return "{}, {}, {}".format(self.name, self.city, self.state_code)
+
+    def __eq__(self, other):
+        return self.name == other.name
 
