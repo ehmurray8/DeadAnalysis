@@ -2,6 +2,7 @@
 <html>
   <head>
     <title>{{ artist }} Analysis</title>
+    <link rel="stylesheet" href="{{ style_url }}">
   </head>
   <body>
     <h1>Analysis of the {{ artist }}</h1>
@@ -15,8 +16,12 @@
     {% for day, song_list, percent in day_song_zip_info %}
       <h3>{{ day }} ({{ percent }})</h3>
       <ol>
-        {% for song, num in song_list %}
-          <li>{{ song }} - {{ num }}</li>
+        {% for song, num, unique in song_list %}
+          {% if unique %}
+            <li class="unique-song">{{ song }} - {{ num }}</li>
+          {% else %}
+            <li>{{ song }} - {{ num }}</li>
+          {% endif %}
         {% endfor %}
       </ol>
     {% endfor %}
@@ -24,8 +29,12 @@
       {% for month, song_list, percent in month_song_zip_info %}
         <h3>{{ month }} ({{ percent }})</h3>
         <ol>
-          {% for song, num in song_list %}
-            <li>{{ song }} - {{ num }}</li>
+          {% for song, num, unique in song_list %}
+            {% if unique %}
+              <li class="unique-song">{{ song }} - {{ num }}</li>
+            {% else %}
+              <li>{{ song }} - {{ num }}</li>
+            {% endif %}
           {% endfor %}
         </ol>
       {% endfor %}
@@ -33,8 +42,12 @@
     {% for year, song_list, percent in year_song_zip_info %}
       <h3>{{ year }} ({{ percent }})</h3>
       <ol>
-        {% for song, num in song_list %}
-          <li>{{ song }} - {{ num }}</li>
+        {% for song, num, unique in song_list %}
+          {% if unique %}
+            <li class="unique-song">{{ song }} - {{ num }}</li>
+          {% else %}
+            <li>{{ song }} - {{ num }}</li>
+          {% endif %}
         {% endfor %}
       </ol>
     {% endfor %}

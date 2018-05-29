@@ -53,8 +53,12 @@ def get_song_data():
             venue_id = venue["id"]
             country = city["country"]
             if venue_id not in music.venues:
+                try:
+                    lat, long = coordinates["lat"], coordinates["long"]
+                except KeyError:
+                    lat, long = -1, -1
                 venue_obj = Venue(venue["name"], city["name"], state, state_code, country["name"],
-                                  country["code"], coordinates["lat"], coordinates["long"], fips)
+                                  country["code"], lat, long, fips)
                 music.venues[venue_id] = venue_obj
             if tour is not None and tour not in [tour.name for tour in music.tours]:
                 tour = Tour(tour)
@@ -91,14 +95,17 @@ def get_song_data():
 
 
 def get_fips(census_conn, coords) -> str:
-    census_conn.request("GET", "/api/census/area?lat={}&lon={}&format=json".format(coords["lat"], coords["long"]))
-    response = census_conn.getresponse().read()
-    response_json = json.loads(response.decode("utf-8"))
     try:
-        fips = response_json["results"][0]["county_fips"]
-    except (IndexError, AttributeError):  # Non-US Concert
-        fips = "NA"
-    return fips
+        census_conn.request("GET", "/api/census/area?lat={}&lon={}&format=json".format(coords["lat"], coords["long"]))
+        response = census_conn.getresponse().read()
+        response_json = json.loads(response.decode("utf-8"))
+        try:
+            fips = response_json["results"][0]["county_fips"]
+        except (IndexError, AttributeError):  # Non-US Concert
+            fips = "NA"
+        return fips
+    except KeyError:
+        return "NA"
 
 
 def get_pickled_song_data() -> MusicData:

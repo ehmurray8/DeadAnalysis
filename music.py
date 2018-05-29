@@ -2,6 +2,7 @@ from collections import defaultdict
 from typing import Callable, List, Tuple, Dict
 from functools import wraps
 from song import Venue, Song, Tour, Concert
+from map_helper import create_graph_code
 
 def concerts_by(function: Callable) -> Callable:
     @wraps(function)
@@ -19,6 +20,12 @@ class MusicData(object):
         self.tours = []  # type: List[Tour]
         self.concerts = []  # type: List[Concert]
         self.songs = {}  # type: Dict[str: Song]
+        self.county_map_html = None  # type: str
+        self.state_map_html = None  # type: str
+        self.country_map_html = None  # type: str
+
+    def get_maps(self):
+        return create_graph_code(self)
 
     def start_year(self):
         return self.concerts[-1].date.year
@@ -141,6 +148,10 @@ class MusicData(object):
         :return: the state code strings for all songs played
         """
         codes.append(self.venues[concert.venue_id].state_code)
+
+    @concerts_by
+    def concerts_by_states(self, codes, concert: Concert):
+        codes.append(self.venues[concert.venue_id].state)
 
     @concerts_by
     def concerts_by_country_codes(self, codes: List[str], concert: Concert):
