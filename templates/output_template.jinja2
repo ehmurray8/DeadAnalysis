@@ -18,7 +18,7 @@
         <li>Set {{ i + 1 }}: {{ set_length }} songs</li>
          <ul>
           <li>Number of Sets {{ i + 1}}s Played Once: {{ num_solo_sets[i] }}</li>
-          <li>Number of Sets Played {{ i + 1}}s Multiple Times: {{ num_multiple_sets[i] }}</li>
+          <li>Number of Sets {{ i + 1}}s Played Multiple Times: {{ num_multiple_sets[i] }}</li>
           <li>Most Played Songs in Set {{ i + 1 }}:
             <ol>
               {% for song in common_set_songs[i] %}
@@ -33,9 +33,11 @@
               {% endfor %}
             </ol>
           </li>
+          {% if num_multiple_sets[i] %}
           <li>Most Repeated Set {{ i + 1 }}s:
             <ol>
               {% for cs in common_sets[i] %}
+                {% if cs[1] %}
                 <li>Set played {{ cs[1] }} times, on: {{ top_set_dates[i][loop.index0]|join(", ") }}
                   <ol>
                     {% for song in cs[0] %}
@@ -43,9 +45,11 @@
                     {% endfor %}
                   </ol>
                 </li>
+                {% endif %}
               {% endfor %}
             </ol>
           </li>
+          {% endif %}
          </ul>
       {% endfor %}
     <li>Average Encore Length: {{ encore_length }}</li>

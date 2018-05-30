@@ -88,8 +88,9 @@ def get_song_data():
                     sets.append(Set(songs))
 
             encores = Set(encores)
-            concert = Concert(date, venue_id, sets, encores, tour)
-            music.concerts.append(concert)
+            if len(encores) or len(sets):
+                concert = Concert(date, venue_id, sets, encores, tour)
+                music.concerts.append(concert)
         i+=1
 
     with open(os.path.join("pickle_data", "{}_song_data.pickle".format(ARTIST)), "wb") as f:
@@ -108,6 +109,10 @@ def get_fips(census_conn, coords) -> str:
         return fips
     except KeyError:
         return "NA"
+
+
+def config_artist_exists():
+    return os.path.isfile(os.path.join("pickle_data", "{}_song_data.pickle".format(ARTIST)))
 
 
 def get_pickled_song_data() -> MusicData:

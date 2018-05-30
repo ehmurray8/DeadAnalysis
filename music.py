@@ -19,7 +19,7 @@ def songs_by(num):
     def _songs_by(func: Callable):
         @wraps(func)
         def wrapper(self: "MusicData", select_num: int) -> \
-                Tuple[List[List[Tuple[str, float]]], List[float], List[float]]:
+                Tuple[List[List[Tuple[str, float]]], List[float], List[float], List[int]]:
             number = num
             if number is None:
                 number = self.last_year() - self.start_year() + 1
@@ -34,7 +34,14 @@ def songs_by(num):
                 songs_total.append(sbd)
                 songs_perc.append(sbd / sum(concert_counts))
 
-            return unique_songs_by(select_num, songs_by), songs_perc, songs_total
+            uniques = unique_songs_by(select_num, songs_by)
+            idxs = [i for i, st in enumerate(songs_total) if not st]
+            ret_idxs = [i for i, st in enumerate(songs_total) if st]
+            songs_total = [x for x in songs_total if x]
+            for i in reversed(idxs):
+                del uniques[i]
+                del songs_perc[i]
+            return uniques, songs_perc, songs_total, ret_idxs
         return wrapper
     return _songs_by
 

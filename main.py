@@ -18,6 +18,8 @@ def unique_songs(songs_by):
 
 
 if __name__ == "__main__":
+    if not gsd.config_artist_exists():
+        gsd.get_song_data()
     # gsd.get_song_data()
     music = gsd.get_pickled_song_data()
     file_loader = FileSystemLoader("templates")
@@ -50,23 +52,27 @@ if __name__ == "__main__":
     kwargs["common_encores"] = common_encores[:NUM_TOP_ENCORES]
     kwargs["common_encore_songs"] = encore_songs.sorted_top_tuples(num=NUM_TOP_ENCORES)
     kwargs["uncommon_encore_songs"] = list(reversed(common_encores))[:NUM_TOP_ENCORES]
-    songs_by_day, percents, songs_total = music.songs_by_day(TOP_SONGS_BY_DAY)
+    songs_by_day, percents, songs_total, indexes = music.songs_by_day(TOP_SONGS_BY_DAY)
     uniques = unique_songs(songs_by_day)
     songs_by_day = [(song[0], song[1], True if song[0] in uniques else False)
                     for song_list in songs_by_day for song in song_list]
     songs_by_day = [songs_by_day[i:i+TOP_SONGS_BY_DAY] for i in range(0, len(songs_by_day), TOP_SONGS_BY_DAY)]
     percents = ["{}, {}%".format(total, round(perc * 100, 2)) for perc, total in zip(percents, songs_total)]
-    kwargs["day_song_zip_info"] = zip(["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday",
-                                   "Sunday"], songs_by_day, percents)
-    songs_by_month, percents, songs_total = music.songs_by_month(TOP_SONGS_BY_MONTH)
+    kwargs["day_song_zip_info"] = zip([day for i, day in
+                                       enumerate(["Monday", "Tuesday", "Wednesday", "Thursday",
+                                                  "Friday", "Saturday", "Sunday"]) if i in indexes],
+                                      songs_by_day, percents)
+    songs_by_month, percents, songs_total, indexes = music.songs_by_month(TOP_SONGS_BY_MONTH)
     uniques = unique_songs(songs_by_month)
     songs_by_month = [(song[0], song[1], True if song[0] in uniques else False)
                       for song_list in songs_by_month for song in song_list]
     songs_by_month = [songs_by_month[i:i+TOP_SONGS_BY_MONTH] for i in range(0, len(songs_by_month), TOP_SONGS_BY_MONTH)]
     percents = ["{}, {}%".format(total, round(perc * 100, 2)) for perc, total in zip(percents, songs_total)]
-    kwargs["month_song_zip_info"] = zip(["January", "February", "March", "April", "May", "June", "July", "August",
-                                         "September", "October", "November", "December"], songs_by_month, percents)
-    songs_by_year, percents, songs_total = music.songs_by_year(TOP_SONGS_BY_YEAR)
+    kwargs["month_song_zip_info"] =\
+        zip([month for i, month in enumerate(["January", "February", "March", "April", "May", "June", "July", "August",
+                                             "September", "October", "November", "December"]) if i in indexes],
+            songs_by_month, percents)
+    songs_by_year, percents, songs_total, indexes = music.songs_by_year(TOP_SONGS_BY_YEAR)
     uniques = unique_songs(songs_by_year)
     songs_by_year = [(song[0], song[1], True if song[0] in uniques else False)
                      for song_list in songs_by_year for song in song_list]
@@ -74,8 +80,9 @@ if __name__ == "__main__":
                      for i in range(0, len(songs_by_year), TOP_SONGS_BY_YEAR)]
     percents = ["{}, {}%".format(total, round(perc * 100, 2)) for perc, total in zip(percents, songs_total)]
     year_song_zip_info = []
-    for year, song_list, percent in zip(range(music.start_year(), datetime.datetime.now().year+1, 1),
-                                        songs_by_year, percents):
+    for year, song_list, percent in zip(
+            [year for i, year in enumerate(range(music.start_year(),datetime.datetime.now().year+1, 1)) if i in indexes],
+             songs_by_year, percents):
         if percent != "0.0%":
             year_song_zip_info.append((year, song_list, percent))
     kwargs["year_song_zip_info"] = year_song_zip_info

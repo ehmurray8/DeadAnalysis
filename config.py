@@ -2,7 +2,7 @@
 
 # ARTISTS = ["Grateful Dead", "Ratdog", "Dead & Company", "Jerry Garcia Band", "Phil and Friends",
 #            "Furthur", "The Other Ones"]
-ARTIST = "Grateful Dead"
+ARTIST = "Dead & Company"
 
 FILTER_SONGS = ["Drums", "Space"]
 
