@@ -128,9 +128,6 @@ class MusicData(object):
         self.tours = []  # type: List[Tour]
         self.concerts = []  # type: List[Concert]
         self.songs = {}  # type: Dict[str: Song]
-        self.county_map_html = None  # type: str
-        self.state_map_html = None  # type: str
-        self.country_map_html = None  # type: str
 
     def get_maps(self):
         return create_graph_code(self)
@@ -160,6 +157,12 @@ class MusicData(object):
                 song_freqs.append((song, cover_song_frequencies[song]))
             artist_to_song[artist] = list(reversed(sorted(song_freqs, key=lambda x: x[1])))
         return top_cover_artists, total_cover_plays, artist_to_song, len(cover_artist_frequencies)
+
+    def tour_info(self):
+        pass
+
+    def venue_info(self):
+        pass
 
     def basic_concert_info(self):
         num_sets = []

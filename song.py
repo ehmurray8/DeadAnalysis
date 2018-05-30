@@ -17,6 +17,9 @@ class Set(object):
     def __init__(self, elems=list()):
         self.elements = elems
 
+    def __str__(self):
+        return ", ".join(self.elements)
+
     def __eq__(self, other):
         if len(self.elements) == len(other.elements):
             for e, oe in zip(self.elements, other.elements):
@@ -94,7 +97,11 @@ class Venue(object):
         return self.name
 
     def __str__(self):
-        return "{}, {}, {}".format(self.name, self.city, self.state_code)
+        try:
+            int(self.state_code)
+            return "{}, {}, {}".format(self.name, self.city, self.country)
+        except ValueError:
+            return "{}, {}, {}".format(self.name, self.city, self.state)
 
     def __eq__(self, other):
         return self.name == other.name

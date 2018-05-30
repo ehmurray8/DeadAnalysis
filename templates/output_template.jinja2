@@ -1,167 +1,87 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <title>{{ artist }} Analysis</title>
-    <link rel="stylesheet" href="{{ style_url }}">
-    <meta charset="utf-8" />
-  </head>
-  <body>
-    <h1>Analysis of the {{ artist }}</h1>
-    <h2>Typical Concert</h2>
-    <ul>
-      <li>Total Concerts: {{ num_concerts }}</li>
-      <li>Total Number of Songs: {{ total_songs }}</li>
-      <li>Average Concert Length (w/ Encores): {{ concert_len }} songs</li>
-      <li>Average Covers per Concert: {{ avg_covers }} songs</li>
-      <li>Average Number of Sets: {{ num_sets }}</li>
-      {% for i, set_length in set_lengths %}
-        <li>Set {{ i + 1 }}: {{ set_length }} songs</li>
-         <ul>
-          <li>Number of Sets {{ i + 1}}s Played Once: {{ num_solo_sets[i] }}</li>
-          <li>Number of Sets {{ i + 1}}s Played Multiple Times: {{ num_multiple_sets[i] }}</li>
-          <li>Most Played Songs in Set {{ i + 1 }}:
-            <ol>
-              {% for song in common_set_songs[i] %}
-                <li>{{ song[0] }} - {{ song[1] }}</li>
-              {% endfor %}
-            </ol>
-          </li>
-          <li>Least Played Songs in Set {{ i + 1 }}:
-            <ol>
-              {% for song in uncommon_set_songs[i] %}
-                <li>{{ song[0] }} - {{ song[1] }}</li>
-              {% endfor %}
-            </ol>
-          </li>
-          {% if num_multiple_sets[i] %}
-          <li>Most Repeated Set {{ i + 1 }}s:
-            <ol>
-              {% for cs in common_sets[i] %}
-                {% if cs[1] %}
-                <li>Set played {{ cs[1] }} times, on: {{ top_set_dates[i][loop.index0]|join(", ") }}
-                  <ol>
-                    {% for song in cs[0] %}
-                      <li>{{ song }}</li>
-                    {% endfor %}
-                  </ol>
+{% import 'helpers.jinja2' as helpers %}
+
+{{ helpers.display_header(" ".join((artist, "Analysis")|list), style_url|list) }}
+
+<h1>Analysis of the {{ artist }}</h1>
+<h2>Typical Concert</h2>
+<ul>
+    <li>Total Concerts: {{ num_concerts }}</li>
+    <li>Total Number of Songs: {{ total_songs }}</li>
+    <li>Average Concert Length (w/ Encores): {{ concert_len }} songs</li>
+    <li>Average Covers per Concert: {{ avg_covers }} songs</li>
+    <li>Average Number of Sets: {{ num_sets }}</li>
+    {% for i, set_length in set_lengths %}
+        <li>Set {{ i + 1 }}: {{ set_length }} songs
+            <ul>
+                <li>Number of Sets {{ i + 1}}s Played Once: {{ num_solo_sets[i] }}</li>
+                <li>Number of Sets {{ i + 1}}s Played Multiple Times: {{ num_multiple_sets[i] }}</li>
+                <li>Most Played Songs in Set {{ i + 1 }}:
+                    {{ helpers.display_songs_values(common_set_songs[i]) }}
                 </li>
-                {% endif %}
-              {% endfor %}
-            </ol>
-          </li>
-          {% endif %}
-         </ul>
-      {% endfor %}
-    <li>Average Encore Length: {{ encore_length }}</li>
-      <ul>
-        <li>Number of Encores Played Once: {{ num_solo_encores }}</li>
-        <li>Number of Encores Played Multiple Times: {{ num_multiple_encores }}</li>
-        <li>Most Played Encores:
-          <ol>
-            {% for song in common_encores %}
-              <li>{{ song[0]|join(" > ") }} - {{ song[1] }}</li>
-            {% endfor %}
-          </ol>
+            </ul>
         </li>
-        <li>Most Played Encore Songs:
-          <ol>
-            {% for song in common_encore_songs %}
-              <li>{{ song[0] }} - {{ song[1] }}</li>
-            {% endfor %}
-          </ol>
+        <li>Least Played Songs in Set {{ i + 1 }}:
+            {{ helpers.display_songs_values(uncommon_set_songs[i]) }}
         </li>
-        <li>Least Played Encores:
-          <ol>
-            {% for song in uncommon_encore_songs %}
-              <li>{{ song[0]|join(" > ") }} - {{ song[1] }}</li>
-            {% endfor %}
-          </ol>
-        </li>
-      </ul>
-    </ul>
-    <h2>Top {{top_songs}} Songs</h2>
-    <ol>
-      {% for song in top_songs_list %}
-        <li>{{ song }}</li>
-      {% endfor %}
-    </ol>
-    <h2>Songs by Day</h2>
-    {% for day, song_list, percent in day_song_zip_info %}
-      <h3>{{ day }} {{ percent }}</h3>
-      <ol>
-        {% for song, num, unique in song_list %}
-          {% if unique %}
-            <li class="unique-song">{{ song }} - {{ num }}</li>
-          {% else %}
-            <li>{{ song }} - {{ num }}</li>
-          {% endif %}
-        {% endfor %}
-      </ol>
+        {% if num_multiple_sets[i] %}
+            <li>Most Repeated Set {{ i + 1 }}s:
+                <ol>
+                {% for cs in common_sets[i] %}
+                    {% if cs[1] %}
+                        <li>Set played {{ cs[1] }} times, on: {{ top_set_dates[i][loop.index0]|join(", ") }}
+                            <ol>
+                            {% for song in cs[0] %}
+                                <li>{{ song }}</li>
+                            {% endfor %}
+                            </ol>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+                </ol>
+            </li>
+        {% endif %}
     {% endfor %}
-    <h2>Songs by Month</h2>
-      {% for month, song_list, percent in month_song_zip_info %}
-        <h3>{{ month }} ({{ percent }})</h3>
-        <ol>
-          {% for song, num, unique in song_list %}
-            {% if unique %}
-              <li class="unique-song">{{ song }} - {{ num }}</li>
-            {% else %}
-              <li>{{ song }} - {{ num }}</li>
-            {% endif %}
-          {% endfor %}
-        </ol>
-      {% endfor %}
-    <h2>Songs by Year</h2>
-    {% for year, song_list, percent in year_song_zip_info %}
-      <h3>{{ year }} ({{ percent }})</h3>
-      <ol>
-        {% for song, num, unique in song_list %}
-          {% if unique %}
-            <li class="unique-song">{{ song }} - {{ num }}</li>
-          {% else %}
-            <li>{{ song }} - {{ num }}</li>
-          {% endif %}
-        {% endfor %}
-      </ol>
-    {% endfor %}
-    {{ county_graph }}
-    <br/>
-    {{ state_graph }}
-    <br/>
-    {{ world_graph }}
-    <br/>
-    <h2>All Songs - {{ all_songs|length }}</h2>
-    <ol>
-      {% for song in all_songs %}
-        <li>{{ song }}</li>
-      {% endfor %}
-    </ol>
-    <br/>
-    <h2>All Original Songs - {{ all_originals|length }}</h2>
-    <ol>
-      {% for song in all_originals %}
-        <li>{{ song }}</li>
-      {% endfor %}
-    </ol>
-    <h2>Covers</h2>
-    <h3>Total Times Covers Played - {{ total_cover_plays }}</h3>
-    <h3>All Covered Songs - {{ all_covers|length }}</h3>
-    <ol>
-      {% for cover in all_covers %}
-        <li>{{ cover }}</li>
-      {% endfor %}
-    </ol>
-    <h3>All Covered Artists - {{ total_artists_covered }}</h3>
-    <ol>
-      {% for artist, num in all_covered_artists %}
+</ul>
+<li>Average Encore Length: {{ encore_length }}</li>
+<ul>
+    <li>Number of Encores Played Once: {{ num_solo_encores }}</li>
+    <li>Number of Encores Played Multiple Times: {{ num_multiple_encores }}</li>
+    {{ helpers.display_encores("Most", common_encores) }}
+    <li>Most Played Encore Songs:
+        {{ helpers.display_songs_values(common_encore_songs) }}
+    </li>
+    {{ helpers.display_encores("Least", uncommon_encores) }}
+</ul>
+<h2>Top {{top_songs}} Songs</h2>
+{{ helpers.display_ordered_list(top_songs_list) }}
+{{ helpers.songs_by("Day", day_song_zip_info) }}
+{{ helpers.songs_by("Month", month_song_zip_info) }}
+{{ helpers.songs_by("Year", year_song_zip_info) }}
+
+{{ county_graph }}
+<br/>
+{{ state_graph }}
+<br/>
+{{ world_graph }}
+<br/>
+
+{{ helpers.display_ordered_list(all_songs, "All Songs") }}
+<br/>
+{{ helpers.display_ordered_list(all_originals, "All Original Songs") }}
+<br/>
+
+<h3>Total Times Covers Played - {{ total_cover_plays }}</h3>
+{{ helpers.display_ordered_list(all_covers, "All Covered Songs") }}
+<h3>All Covered Artists - {{ total_artists_covered }}</h3>
+<ol>
+    {% for artist, num in all_covered_artists %}
         <li>{{ artist }} - {{ num }}
-          <ol>
+            <ol>
             {% for song, num_song in artist_to_songs[artist] %}
-              <li>{{ song }} - {{ num_song }}</li>
+                <li>{{ song }} - {{ num_song }}</li>
             {% endfor %}
-          </ol>
+            </ol>
         </li>
-      {% endfor %}
-    </ol>
-  </body>
-</html>
+    {% endfor %}
+</ol>
+{{ helpers.display_footer() }}
