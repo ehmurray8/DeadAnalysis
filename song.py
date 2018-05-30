@@ -68,6 +68,9 @@ class Concert(object):
     def get_weekday(self):
         return self.date.weekday()
 
+    def all_songs(self):
+        return [song for s in self.sets + [self.encores] for song in s]
+
     def __repr__(self):
         return self.date
 

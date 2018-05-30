@@ -1,18 +1,106 @@
 from collections import defaultdict
-from typing import Callable, List, Tuple, Dict
+from typing import Callable, List, Tuple, Dict, Optional
 from functools import wraps
 from song import Venue, Song, Tour, Concert
 from map_helper import create_graph_code
-from config import NUM_TOP_CONCERTS, NUM_TOP_ENCORES, NUM_TOP_SET_SONGS
+from config import NUM_TOP_CONCERTS, NUM_TOP_ENCORES, NUM_TOP_SET_SONGS, FILTER_SONGS
 
-def concerts_by(function: Callable) -> Callable:
-    @wraps(function)
+
+def concerts_by(func: Callable) -> Callable:
+    @wraps(func)
     def wrapper(self) -> List:
         locs = []
         for concert in self.concerts:
-            function(self, locs, concert)
+            func(self, locs, concert)
         return locs
     return wrapper
+
+def songs_by(num):
+    def _songs_by(func: Callable):
+        @wraps(func)
+        def wrapper(self: "MusicData", select_num: int) -> \
+                Tuple[List[List[Tuple[str, float]]], List[float], List[float]]:
+            number = num
+            if number is None:
+                number = self.last_year() - self.start_year() + 1
+            concert_counts = [0] * number
+            songs_by = [SongCont(FILTER_SONGS) for _ in range(number)]
+            for concert in self.concerts:
+                func(self, concert, concert_counts, songs_by)
+
+            songs_perc = []
+            songs_total = []
+            for sbd in concert_counts:
+                songs_total.append(sbd)
+                songs_perc.append(sbd / sum(concert_counts))
+
+            return unique_songs_by(select_num, songs_by), songs_perc, songs_total
+        return wrapper
+    return _songs_by
+
+
+class FrequencyDict(object):
+    def __init__(self):
+        self.freq_dict = defaultdict(int)
+
+    def add(self, song):
+        self.freq_dict[song] += 1
+
+    def sorted_list(self, descending):
+        return [(key, self.freq_dict[key]) for key in sorted(self.freq_dict, key=self.freq_dict.get, reverse=descending)]
+
+    def sorted_top_keys(self, num=None, descending=True):
+        if num is None:
+            num = len(self.freq_dict)
+        return [key[0] for key in self.sorted_list(descending)][:num]
+
+    def sorted_top_tuples(self, num=None, descending=True):
+        if num is None:
+            num = len(self.freq_dict)
+        return [(key[0], key[1]) for key in self.sorted_list(descending)][:num]
+
+    def keys_set(self):
+        return set(self.freq_dict.keys())
+
+    def __str__(self):
+        return str(self.freq_dict)
+
+    def __len__(self):
+        return len(self.freq_dict)
+
+    def __repr__(self):
+        return str(self.freq_dict)
+
+
+class SongCont(FrequencyDict):
+    def __init__(self, filter_songs: List[str]=list()):
+        super().__init__()
+        filter_songs.append("")
+        self.filter_songs = filter_songs
+
+    def sorted_top_keys(self, num=None, descending=True):
+        if num is None:
+            num = len(self.freq_dict)
+        return [key[0].name for key in self.sorted_list(descending)
+                if key[0].name not in self.filter_songs][:num]
+
+    def sorted_top_tuples(self, num=None, descending=True):
+        if num is None:
+            num = len(self.freq_dict)
+        return [(key[0].name, key[1]) for key in self.sorted_list(descending)
+                if key[0].name not in self.filter_songs][:num]
+
+    def all_covered_songs(self):
+        return ["{} ({}) - {}".format(key[0].name, key[0].orig_artist, key[1]) for key in self.sorted_list(True)
+                if key[0].name not in self.filter_songs and key[0].is_cover()]
+
+    def all_songs(self):
+        return ["{} - {}".format(key[0].name, key[1]) for key in self.sorted_list(True)
+                if key[0].name not in self.filter_songs]
+
+    def all_originals(self):
+        return ["{} - {}".format(key[0].name, key[1]) for key in self.sorted_list(True)
+                if key[0].name not in self.filter_songs and not key[0].is_cover()]
 
 
 class MusicData(object):
@@ -34,6 +122,13 @@ class MusicData(object):
     def last_year(self):
         return self.concerts[0].date.year
 
+    def cover_info(self):
+        cover_frequencies = SongCont(FILTER_SONGS)
+        for concert in self.concerts:
+            for song in concert.all_songs():
+                if song.is_cover():
+                    cover_frequencies.add(song.orig_artist)
+
     def basic_concert_info(self):
         num_sets = []
         for concert in self.concerts:
@@ -41,15 +136,15 @@ class MusicData(object):
         usual_num_sets = max(set(num_sets), key=num_sets.count)
         set_lengths = [[] for _ in range(usual_num_sets)]
         encore_length = []
-        sets = [defaultdict(int) for _ in range(usual_num_sets)]
+        sets = [FrequencyDict() for _ in range(usual_num_sets)]
         dates = [defaultdict(list) for _ in range(usual_num_sets)]
-        encores = defaultdict(int)
+        encores = FrequencyDict()
         total_length = 0
         for concert in self.concerts:
             if len(concert.sets) == usual_num_sets:
                 for i, s in enumerate(concert.sets):
                     set_lengths[i].append(len(s))
-                    sets[i][s] += 1
+                    sets[i].add(s)
                     dates[i][s] += [concert.date]
                     total_length += len(s)
             elif concert.sets is not None:
@@ -57,7 +152,7 @@ class MusicData(object):
 
             if concert.encores is not None and len(concert.encores):
                 encore_length.append(len(concert.encores))
-                encores[concert.encores] += 1
+                encores.add(concert.encores)
                 total_length += len(concert.encores)
             else:
                 encore_length.append(0)
@@ -67,27 +162,24 @@ class MusicData(object):
         num_solo_encore = 0
         num_multiple_sets = [0 for _ in range(usual_num_sets)]
         num_solo_sets = [0 for _ in range(usual_num_sets)]
-        common_set_songs = [defaultdict(int) for _ in range(usual_num_sets)]
+        common_set_songs = [FrequencyDict() for _ in range(usual_num_sets)]
         for i, s in enumerate(sets):
-            common_sets[i] = [(key, s[key]) for key in sorted(s, key=s.get, reverse=True)]
+            common_sets[i] = s.sorted_top_tuples()
             for key, value in common_sets[i]:
                 if value > 1:
                     num_multiple_sets[i] += 1
                 else:
                     num_solo_sets[i] += 1
                 for song in key:
-                    common_set_songs[i][song] += 1
+                    common_set_songs[i].add(song)
             common_sets[i] = common_sets[i][:NUM_TOP_CONCERTS]
 
         common_set_songs_ordered = [[] for _ in range(usual_num_sets)]
         uncommon_set_songs_ordered = [[] for _ in range(usual_num_sets)]
         for i, ss in enumerate(common_set_songs):
-            common_set_songs_ordered[i] = [(key, ss[key])
-                                           for key in sorted(ss, key=ss.get, reverse=True)][:NUM_TOP_SET_SONGS]
-            uncommon_set_songs_ordered[i] = [(key, ss[key])
-                                             for key in sorted(ss, key=ss.get, reverse=False)][:NUM_TOP_SET_SONGS]
-        common_encores = [(key, encores[key]) for key in sorted(encores, key=encores.get, reverse=True)]
-        uncommon_encores = [(key, encores[key]) for key in sorted(encores, key=encores.get, reverse=False)]
+            common_set_songs_ordered[i] = ss.sorted_top_tuples(num=NUM_TOP_SET_SONGS)
+            uncommon_set_songs_ordered[i] = ss.sorted_top_tuples(num=NUM_TOP_SET_SONGS, descending=False)
+        common_encores = encores.sorted_top_tuples()
         for key, value in common_encores:
             if value > 1:
                 num_multiple_encores += 1
@@ -102,9 +194,10 @@ class MusicData(object):
                 top_set_dates[i].append([date.strftime("%B %d, %Y") for date in sorted(dates[i][c[0]])])
         return set_lengths, round(encore_length, 2), common_sets, common_encores[:NUM_TOP_ENCORES], num_solo_sets,\
                num_multiple_sets, num_solo_encore, num_multiple_encores, common_set_songs_ordered, top_set_dates,\
-               uncommon_set_songs_ordered, uncommon_encores[:NUM_TOP_ENCORES], round(total_length/len(self.concerts), 2)
+               uncommon_set_songs_ordered, round(total_length/len(self.concerts), 2)
 
-    def songs_by_day(self, select_num: int) -> Tuple[List[List[Tuple[str, float]]], List[float], List[float]]:
+    @songs_by(7)
+    def songs_by_day(self, concert, concert_counts, songs_by_day):
         """
         Return a list of lists for each day there is song data for and selects the top select_num for
         each day.
@@ -112,23 +205,12 @@ class MusicData(object):
         :param select_num: the top number of songs to select by day
         :return: the top select_num song names by day
         """
-        song_counts_by_day = [0] * 7
-        songs_by_day = [SongCont() for _ in range(7)]
-        for concert in self.concerts:
-            song_counts_by_day[concert.get_weekday()] += 1
-            for song in [song for s in concert.sets + [concert.encores] for song in s]:
-                songs_by_day[concert.get_weekday()].add(song)
+        concert_counts[concert.get_weekday()] += 1
+        for song in concert.all_songs():
+            songs_by_day[concert.get_weekday()].add(song)
 
-        num_songs = sum(song_counts_by_day)
-        songs_perc = []
-        songs_total = []
-        for sbd in song_counts_by_day:
-            songs_total.append(sbd)
-            songs_perc.append(float(sbd) / float(num_songs))
-
-        return unique_songs_by(select_num, songs_by_day), songs_perc, songs_total
-
-    def songs_by_month(self, select_num: int) -> Tuple[List[List[Tuple[str, int]]], List[float], List[float]]:
+    @songs_by(12)
+    def songs_by_month(self, concert: Concert, concert_counts: List[int], songs_by_month: List["FrequencyDict"]):
         """
         Return a list of lists for each month there is song data for and selects the top select_num for
         each month.
@@ -136,23 +218,12 @@ class MusicData(object):
         :param select_num: the top number of songs to select by month
         :return: the top select_num song names by month
         """
-        song_counts_by_month = [0] * 12
-        songs_by_month = [SongCont() for _ in range(12)]
-        for concert in self.concerts:
-            song_counts_by_month[concert.date.month - 1] += 1
-            for song in [song for s in concert.sets + [concert.encores] for song in s]:
-                songs_by_month[concert.date.month - 1].add(song)
+        concert_counts[concert.date.month - 1] += 1
+        for song in concert.all_songs():
+            songs_by_month[concert.date.month - 1].add(song)
 
-        num_songs = sum(song_counts_by_month)
-        songs_perc = []
-        songs_total = []
-        for sbd in song_counts_by_month:
-            songs_total.append(sbd)
-            songs_perc.append(float(sbd) / float(num_songs))
-
-        return unique_songs_by(select_num, songs_by_month), songs_perc, songs_total
-
-    def songs_by_year(self, select_num: int) -> Tuple[List[List[Tuple[str, float]]], List[float], List[float]]:
+    @songs_by(None)
+    def songs_by_year(self, concert, concert_counts, songs_by_year):
         """
         Return a list of lists for each year there is song data for and selects the top select_num for
         each year.
@@ -160,35 +231,22 @@ class MusicData(object):
         :param select_num: the top number of songs to select by year
         :return: the top select_num song names by year
         """
-        num_years = self.last_year() - self.start_year() + 1
-        song_counts_by_year = [0] * num_years
-        songs_by_year = [SongCont() for _ in range(num_years)]
-        for concert in self.concerts:
-            i = concert.date.year - self.start_year()
-            song_counts_by_year[i] += 1
-            for song in [song for s in concert.sets + [concert.encores] for song in s]:
-                songs_by_year[i].add(song)
-
-        num_songs = sum(song_counts_by_year)
-        songs_perc = []
-        songs_total = []
-        for sbd in song_counts_by_year:
-            songs_total.append(sbd)
-            songs_perc.append(float(sbd) / float(num_songs))
-
-        return unique_songs_by(select_num, songs_by_year), songs_perc, songs_total
+        i = concert.date.year - self.start_year()
+        concert_counts[i] += 1
+        for song in concert.all_songs():
+            songs_by_year[i].add(song)
 
     def top_songs(self, select_num: int):
-        song_cont = SongCont()
+        song_cont = SongCont(FILTER_SONGS)
         for concert in self.concerts:
-            for song in [song for s in concert.sets + [concert.encores] for song in s]:
+            for song in concert.all_songs():
                 song_cont.add(song)
         return song_cont.sorted_top_tuples(select_num)
 
     def all_song_info(self):
         song_cont = SongCont()
         for concert in self.concerts:
-            for song in [song for s in concert.sets + [concert.encores] for song in s]:
+            for song in concert.all_songs():
                 song_cont.add(song)
         return song_cont.all_songs(), song_cont.all_covered_songs(), song_cont.all_originals()
 
@@ -242,52 +300,9 @@ class MusicData(object):
         codes.append(self.venues[concert.venue_id].country_code)
 
 
-class SongCont(object):
-    def __init__(self):
-        self.freq_dict = defaultdict(int)
-        self.all = []  # type: List[Song]
-
-    def add(self, song: Song):
-        self.all.append(song)
-        self.freq_dict[song] += 1
-
-    def sorted_list(self):
-        return [(key, self.freq_dict[key]) for key in sorted(self.freq_dict, key=self.freq_dict.get, reverse=True)]
-
-    def sorted_top_keys(self, num):
-        return [key[0].name for key in self.sorted_list() if key[0].name != "" and key[0].name != "Drums"
-                and key[0].name != "Space"][:num]
-
-    def sorted_top_tuples(self, num):
-        return [(key[0].name, key[1]) for key in self.sorted_list() if key[0].name != "" and key[0].name != "Drums"
-                and key[0].name != "Space"][:num]
-
-    def all_covered_songs(self):
-        return ["{} ({}) - {}".format(key[0].name, key[0].orig_artist, key[1]) for key in self.sorted_list()
-                if key[0].name != "" and key[0].name != "Drums" and key[0].name != "Space" and key[0].is_cover()]
-
-    def all_songs(self):
-        return ["{} - {}".format(key[0].name, key[1]) for key in self.sorted_list()
-                if key[0].name != "" and key[0].name != "Drums" and key[0].name != "Space"]
-
-    def all_originals(self):
-        return ["{} - {}".format(key[0].name, key[1]) for key in self.sorted_list()
-                if key[0].name != "" and key[0].name != "Drums" and key[0].name != "Space" and not key[0].is_cover()]
-
-    def keys_set(self):
-        return set(self.freq_dict.keys())
-
-    def __str__(self):
-        return str(self.freq_dict)
-
-    def __len__(self):
-        return len(self.freq_dict)
-
-    def __repr__(self):
-        return str(self.freq_dict)
 
 
-def unique_songs_by(unique_num: int, songs_by: List[SongCont]) -> List[List[Tuple[str, int]]]:
+def unique_songs_by(unique_num: int, songs_by: List[FrequencyDict]) -> List[List[Tuple[str, int]]]:
     songs_by_lists = []
     for songs in songs_by:
         songs_by_lists.append(songs.sorted_top_tuples(unique_num))

@@ -23,7 +23,7 @@ if __name__ == "__main__":
     template = env.get_template("output_template.jinja2")
     kwargs = {}
     set_lengths, encore_length, common_sets, common_encores, num_solo_sets,  num_multiple_sets,\
-        num_solo_encore, num_multiple_encores, common_set_songs, top_set_dates, uncommon_set_songs, uncommon_encores,\
+        num_solo_encore, num_multiple_encores, common_set_songs, top_set_dates, uncommon_set_songs,\
         avg_concert_length= music.basic_concert_info()
 
     kwargs["concert_len"] = avg_concert_length
@@ -40,7 +40,7 @@ if __name__ == "__main__":
     kwargs["common_set_songs"] = common_set_songs
     kwargs["common_encore_songs"] = common_encores
     kwargs["uncommon_set_songs"] = uncommon_set_songs
-    kwargs["uncommon_encores"] = uncommon_encores
+    kwargs["uncommon_encores"] = list(reversed(common_encores))
     songs_by_day, percents, songs_total = music.songs_by_day(TOP_SONGS_BY_DAY)
     uniques = unique_songs(songs_by_day)
     songs_by_day = [(song[0], song[1], True if song[0] in uniques else False)
