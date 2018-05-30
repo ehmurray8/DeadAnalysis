@@ -8,19 +8,61 @@
     <h1>Analysis of the {{ artist }}</h1>
     <h2>Typical Concert</h2>
     <ul>
+      <li>Total Concerts: {{ num_concerts }}</li>
+      <li>Average Concert Length (w/ Encores): {{ concert_len }} songs</li>
       <li>Average Number of Sets: {{ num_sets }}</li>
       {% for i, set_length in set_lengths %}
         <li>Set {{ i + 1 }}: {{ set_length }} songs</li>
          <ul>
           <li>Number of unique set {{ i + 1}}s: {{ num_solo_sets[i] }}</li>
           <li>Number of duplicate set {{ i + 1}}s: {{ num_multiple_sets[i] }}</li>
-          <li>Number of </li>
+          <li>Most Played Songs in Set {{ i + 1 }}:
+            <ol>
+              {% for song in common_set_songs[i] %}
+                <li>{{ song[0] }} - {{ song[1] }}</li>
+              {% endfor %}
+            </ol>
+          </li>
+          <li>Least Played Songs in Set {{ i + 1 }}:
+            <ol>
+              {% for song in uncommon_set_songs[i] %}
+                <li>{{ song[0] }} - {{ song[1] }}</li>
+              {% endfor %}
+            </ol>
+          </li>
+          <li>Most Repeated Set {{ i + 1 }}s:
+            <ol>
+              {% for cs in common_sets[i] %}
+                <li>Set played {{ cs[1] }} times, on: {{ top_set_dates[i][loop.index0]|join(", ") }}
+                  <ol>
+                    {% for song in cs[0] %}
+                      <li>{{ song }}</li>
+                    {% endfor %}
+                  </ol>
+                </li>
+              {% endfor %}
+            </ol>
+          </li>
          </ul>
       {% endfor %}
     <li>Average Encore Length: {{ encore_length }}</li>
       <ul>
         <li>Number of unique encores: {{ num_solo_encores }}</li>
         <li>Number of duplicate encores: {{ num_multiple_encores }}</li>
+        <li>Most Played Encore Songs:
+          <ol>
+            {% for song in common_encore_songs %}
+              <li>{{ song[0]|join(" > ") }} - {{ song[1] }}</li>
+            {% endfor %}
+          </ol>
+        </li>
+        <li>Least Played Encore Songs:
+          <ol>
+            {% for song in uncommon_encores %}
+              <li>{{ song[0]|join(" > ") }} - {{ song[1] }}</li>
+            {% endfor %}
+          </ol>
+        </li>
       </ul>
     </ul>
     <h2>Top {{top_songs}} Songs</h2>
@@ -31,7 +73,7 @@
     </ol>
     <h2>Songs by Day</h2>
     {% for day, song_list, percent in day_song_zip_info %}
-      <h3>{{ day }} ({{ percent }})</h3>
+      <h3>{{ day }} {{ percent }}</h3>
       <ol>
         {% for song, num, unique in song_list %}
           {% if unique %}

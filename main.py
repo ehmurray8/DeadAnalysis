@@ -23,40 +23,47 @@ if __name__ == "__main__":
     template = env.get_template("output_template.jinja2")
     kwargs = {}
     set_lengths, encore_length, common_sets, common_encores, num_solo_sets,  num_multiple_sets,\
-        num_solo_encore, num_multiple_encores, common_set_songs_ordered  = music.basic_concert_info()
+        num_solo_encore, num_multiple_encores, common_set_songs, top_set_dates, uncommon_set_songs, uncommon_encores,\
+        avg_concert_length= music.basic_concert_info()
 
-    # TODO: Add common_sets, common_encores, and common_set_songs_ordered to the template
-
+    kwargs["concert_len"] = avg_concert_length
+    kwargs["num_concerts"] = len(music.concerts)
     kwargs["num_solo_sets"] = num_solo_sets
     kwargs["num_multiple_sets"] = num_multiple_sets
     kwargs["num_solo_encores"] = num_solo_encore
     kwargs["num_multiple_encores"] = num_multiple_encores
+    kwargs["common_sets"] = common_sets
+    kwargs["top_set_dates"] = top_set_dates
     kwargs["num_sets"] = len(set_lengths)
     kwargs["set_lengths"] = enumerate(set_lengths)
     kwargs["encore_length"] = encore_length
-    songs_by_day, percents = music.songs_by_day(TOP_SONGS_BY_DAY)
+    kwargs["common_set_songs"] = common_set_songs
+    kwargs["common_encore_songs"] = common_encores
+    kwargs["uncommon_set_songs"] = uncommon_set_songs
+    kwargs["uncommon_encores"] = uncommon_encores
+    songs_by_day, percents, songs_total = music.songs_by_day(TOP_SONGS_BY_DAY)
     uniques = unique_songs(songs_by_day)
     songs_by_day = [(song[0], song[1], True if song[0] in uniques else False)
                     for song_list in songs_by_day for song in song_list]
     songs_by_day = [songs_by_day[i:i+TOP_SONGS_BY_DAY] for i in range(0, len(songs_by_day), TOP_SONGS_BY_DAY)]
-    percents = ["{}%".format(round(perc * 100, 2)) for perc in percents]
+    percents = ["{}, {}%".format(total, round(perc * 100, 2)) for perc, total in zip(percents, songs_total)]
     kwargs["day_song_zip_info"] = zip(["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday",
                                    "Sunday"], songs_by_day, percents)
-    songs_by_month, percents = music.songs_by_month(TOP_SONGS_BY_MONTH)
+    songs_by_month, percents, songs_total = music.songs_by_month(TOP_SONGS_BY_MONTH)
     uniques = unique_songs(songs_by_month)
     songs_by_month = [(song[0], song[1], True if song[0] in uniques else False)
                       for song_list in songs_by_month for song in song_list]
     songs_by_month = [songs_by_month[i:i+TOP_SONGS_BY_MONTH] for i in range(0, len(songs_by_month), TOP_SONGS_BY_MONTH)]
-    percents = ["{}%".format(round(perc * 100, 2)) for perc in percents]
+    percents = ["{}, {}%".format(total, round(perc * 100, 2)) for perc, total in zip(percents, songs_total)]
     kwargs["month_song_zip_info"] = zip(["January", "February", "March", "April", "May", "June", "July", "August",
                                          "September", "October", "November", "December"], songs_by_month, percents)
-    songs_by_year, percents = music.songs_by_year(TOP_SONGS_BY_YEAR)
+    songs_by_year, percents, songs_total = music.songs_by_year(TOP_SONGS_BY_YEAR)
     uniques = unique_songs(songs_by_year)
     songs_by_year = [(song[0], song[1], True if song[0] in uniques else False)
                      for song_list in songs_by_year for song in song_list]
     songs_by_year = [songs_by_year[i:i+TOP_SONGS_BY_YEAR]
                      for i in range(0, len(songs_by_year), TOP_SONGS_BY_YEAR)]
-    percents = ["{}%".format(round(perc * 100, 2)) for perc in percents]
+    percents = ["{}, {}%".format(total, round(perc * 100, 2)) for perc, total in zip(percents, songs_total)]
     year_song_zip_info = []
     for year, song_list, percent in zip(range(music.start_year(), datetime.datetime.now().year+1, 1),
                                         songs_by_year, percents):

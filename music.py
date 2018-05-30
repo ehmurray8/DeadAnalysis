@@ -42,15 +42,23 @@ class MusicData(object):
         set_lengths = [[] for _ in range(usual_num_sets)]
         encore_length = []
         sets = [defaultdict(int) for _ in range(usual_num_sets)]
+        dates = [defaultdict(list) for _ in range(usual_num_sets)]
         encores = defaultdict(int)
+        total_length = 0
         for concert in self.concerts:
             if len(concert.sets) == usual_num_sets:
                 for i, s in enumerate(concert.sets):
                     set_lengths[i].append(len(s))
                     sets[i][s] += 1
-            if len(concert.encores):
+                    dates[i][s] += [concert.date]
+                    total_length += len(s)
+            elif concert.sets is not None:
+                total_length += sum(len(s) for s in concert.sets)
+
+            if concert.encores is not None and len(concert.encores):
                 encore_length.append(len(concert.encores))
                 encores[concert.encores] += 1
+                total_length += len(concert.encores)
             else:
                 encore_length.append(0)
 
@@ -70,24 +78,33 @@ class MusicData(object):
                 for song in key:
                     common_set_songs[i][song] += 1
             common_sets[i] = common_sets[i][:NUM_TOP_CONCERTS]
+
         common_set_songs_ordered = [[] for _ in range(usual_num_sets)]
+        uncommon_set_songs_ordered = [[] for _ in range(usual_num_sets)]
         for i, ss in enumerate(common_set_songs):
             common_set_songs_ordered[i] = [(key, ss[key])
-                                   for key in sorted(ss, key=ss.get,
-                                                     reverse=True)][:NUM_TOP_SET_SONGS]
+                                           for key in sorted(ss, key=ss.get, reverse=True)][:NUM_TOP_SET_SONGS]
+            uncommon_set_songs_ordered[i] = [(key, ss[key])
+                                             for key in sorted(ss, key=ss.get, reverse=False)][:NUM_TOP_SET_SONGS]
         common_encores = [(key, encores[key]) for key in sorted(encores, key=encores.get, reverse=True)]
+        uncommon_encores = [(key, encores[key]) for key in sorted(encores, key=encores.get, reverse=False)]
         for key, value in common_encores:
             if value > 1:
                 num_multiple_encores += 1
             else:
                 num_solo_encore += 1
 
-        set_lengths = [round(float(sum(sl))/float(len(sl)), 2) for sl in set_lengths]
-        encore_length = float(sum(encore_length))/float(len(encore_length))
+        set_lengths = [round(sum(sl)/len(sl), 2) for sl in set_lengths]
+        encore_length = sum(encore_length)/len(encore_length)
+        top_set_dates = [[] for _ in range(usual_num_sets)]
+        for i, cs in enumerate(common_sets):
+            for c in cs:
+                top_set_dates[i].append([date.strftime("%B %d, %Y") for date in sorted(dates[i][c[0]])])
         return set_lengths, round(encore_length, 2), common_sets, common_encores[:NUM_TOP_ENCORES], num_solo_sets,\
-               num_multiple_sets, num_solo_encore, num_multiple_encores, common_set_songs_ordered
+               num_multiple_sets, num_solo_encore, num_multiple_encores, common_set_songs_ordered, top_set_dates,\
+               uncommon_set_songs_ordered, uncommon_encores[:NUM_TOP_ENCORES], round(total_length/len(self.concerts), 2)
 
-    def songs_by_day(self, select_num: int) -> Tuple[List[List[Tuple[str, float]]], List[float]]:
+    def songs_by_day(self, select_num: int) -> Tuple[List[List[Tuple[str, float]]], List[float], List[float]]:
         """
         Return a list of lists for each day there is song data for and selects the top select_num for
         each day.
@@ -98,18 +115,20 @@ class MusicData(object):
         song_counts_by_day = [0] * 7
         songs_by_day = [SongCont() for _ in range(7)]
         for concert in self.concerts:
-            song_counts_by_day[concert.get_weekday()] += sum([len(s) for s in concert.sets]) + len(concert.encores)
+            song_counts_by_day[concert.get_weekday()] += 1
             for song in [song for s in concert.sets + [concert.encores] for song in s]:
                 songs_by_day[concert.get_weekday()].add(song)
 
         num_songs = sum(song_counts_by_day)
         songs_perc = []
+        songs_total = []
         for sbd in song_counts_by_day:
+            songs_total.append(sbd)
             songs_perc.append(float(sbd) / float(num_songs))
 
-        return unique_songs_by(select_num, songs_by_day), songs_perc
+        return unique_songs_by(select_num, songs_by_day), songs_perc, songs_total
 
-    def songs_by_month(self, select_num: int) -> Tuple[List[List[Tuple[str, int]]], List[float]]:
+    def songs_by_month(self, select_num: int) -> Tuple[List[List[Tuple[str, int]]], List[float], List[float]]:
         """
         Return a list of lists for each month there is song data for and selects the top select_num for
         each month.
@@ -120,18 +139,20 @@ class MusicData(object):
         song_counts_by_month = [0] * 12
         songs_by_month = [SongCont() for _ in range(12)]
         for concert in self.concerts:
-            song_counts_by_month[concert.date.month - 1] += sum([len(s) for s in concert.sets]) + len(concert.encores)
+            song_counts_by_month[concert.date.month - 1] += 1
             for song in [song for s in concert.sets + [concert.encores] for song in s]:
                 songs_by_month[concert.date.month - 1].add(song)
 
         num_songs = sum(song_counts_by_month)
         songs_perc = []
+        songs_total = []
         for sbd in song_counts_by_month:
+            songs_total.append(sbd)
             songs_perc.append(float(sbd) / float(num_songs))
 
-        return unique_songs_by(select_num, songs_by_month), songs_perc
+        return unique_songs_by(select_num, songs_by_month), songs_perc, songs_total
 
-    def songs_by_year(self, select_num: int) -> Tuple[List[List[Tuple[str, float]]], List[float]]:
+    def songs_by_year(self, select_num: int) -> Tuple[List[List[Tuple[str, float]]], List[float], List[float]]:
         """
         Return a list of lists for each year there is song data for and selects the top select_num for
         each year.
@@ -144,16 +165,18 @@ class MusicData(object):
         songs_by_year = [SongCont() for _ in range(num_years)]
         for concert in self.concerts:
             i = concert.date.year - self.start_year()
-            song_counts_by_year[i] += sum([len(s) for s in concert.sets]) + len(concert.encores)
+            song_counts_by_year[i] += 1
             for song in [song for s in concert.sets + [concert.encores] for song in s]:
                 songs_by_year[i].add(song)
 
         num_songs = sum(song_counts_by_year)
         songs_perc = []
+        songs_total = []
         for sbd in song_counts_by_year:
+            songs_total.append(sbd)
             songs_perc.append(float(sbd) / float(num_songs))
 
-        return unique_songs_by(select_num, songs_by_year), songs_perc
+        return unique_songs_by(select_num, songs_by_year), songs_perc, songs_total
 
     def top_songs(self, select_num: int):
         song_cont = SongCont()
