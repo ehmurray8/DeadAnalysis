@@ -2,7 +2,9 @@ import os
 from collections import defaultdict
 from jinja2 import Environment, FileSystemLoader
 import datetime
-from config import ARTIST, TOP_SONGS_BY_DAY, TOP_SONGS_BY_MONTH, TOP_SONGS_BY_YEAR
+from config import ARTIST, TOP_SONGS_BY_DAY, TOP_SONGS_BY_MONTH, TOP_SONGS_BY_YEAR, NUM_TOP_ENCORES, NUM_TOP_CONCERTS, \
+    NUM_TOP_SET_SONGS
+from music import FrequencyDict
 import get_song_data as gsd
 
 
@@ -23,24 +25,31 @@ if __name__ == "__main__":
     template = env.get_template("output_template.jinja2")
     kwargs = {}
     set_lengths, encore_length, common_sets, common_encores, num_solo_sets,  num_multiple_sets,\
-        num_solo_encore, num_multiple_encores, common_set_songs, top_set_dates, uncommon_set_songs,\
-        avg_concert_length= music.basic_concert_info()
+        num_solo_encore, num_multiple_encores, common_set_songs, top_set_dates, \
+        avg_concert_length, avg_covers = music.basic_concert_info()
 
+    encore_songs = FrequencyDict()
+    for set, num in common_encores:
+        for song in set:
+            encore_songs.add(song, num)
+
+    kwargs["avg_covers"] = avg_covers
     kwargs["concert_len"] = avg_concert_length
     kwargs["num_concerts"] = len(music.concerts)
     kwargs["num_solo_sets"] = num_solo_sets
     kwargs["num_multiple_sets"] = num_multiple_sets
     kwargs["num_solo_encores"] = num_solo_encore
     kwargs["num_multiple_encores"] = num_multiple_encores
-    kwargs["common_sets"] = common_sets
+    kwargs["common_sets"] = [css[:NUM_TOP_CONCERTS] for css in common_sets]
     kwargs["top_set_dates"] = top_set_dates
     kwargs["num_sets"] = len(set_lengths)
     kwargs["set_lengths"] = enumerate(set_lengths)
     kwargs["encore_length"] = encore_length
-    kwargs["common_set_songs"] = common_set_songs
-    kwargs["common_encore_songs"] = common_encores
-    kwargs["uncommon_set_songs"] = uncommon_set_songs
-    kwargs["uncommon_encores"] = list(reversed(common_encores))
+    kwargs["common_set_songs"] = [css[:NUM_TOP_SET_SONGS] for css in common_set_songs]
+    kwargs["uncommon_set_songs"] = [list(reversed(css))[:NUM_TOP_SET_SONGS] for css in common_set_songs]
+    kwargs["common_encores"] = common_encores[:NUM_TOP_ENCORES]
+    kwargs["common_encore_songs"] = encore_songs.sorted_top_tuples(num=NUM_TOP_ENCORES)
+    kwargs["uncommon_encore_songs"] = list(reversed(common_encores))[:NUM_TOP_ENCORES]
     songs_by_day, percents, songs_total = music.songs_by_day(TOP_SONGS_BY_DAY)
     uniques = unique_songs(songs_by_day)
     songs_by_day = [(song[0], song[1], True if song[0] in uniques else False)
@@ -74,12 +83,15 @@ if __name__ == "__main__":
     kwargs["top_songs"] = len(top_songs)
     kwargs["top_songs_list"] = ["{} - {}".format(song, num) for song, num in top_songs]
     kwargs["county_graph"], kwargs["state_graph"], kwargs["world_graph"] = music.get_maps()
-    kwargs["all_songs"] , kwargs["all_covers"], kwargs["all_originals"] = music.all_song_info()
-    kwargs["num_songs"] = len(kwargs["all_songs"])
-    kwargs["num_covers"] = len(kwargs["all_covers"])
-    kwargs["num_originals"] = len(kwargs["all_originals"])
+    kwargs["all_songs"] , kwargs["all_covers"], kwargs["all_originals"], kwargs["total_songs"] = music.all_song_info()
     kwargs["artist"] = ARTIST
     kwargs["style_url"] = os.path.join(os.getcwd(), "static", "stylesheet.css")
+
+    top_cover_artists, total_cover_plays, artist_to_song, total_artists_covered = music.cover_info()
+    kwargs["total_cover_plays"] = total_cover_plays
+    kwargs["all_covered_artists"] = top_cover_artists
+    kwargs["artist_to_songs"] = artist_to_song
+    kwargs["total_artists_covered"] = total_artists_covered
     output = template.render(**kwargs)
     if not os.path.isdir(r"html\{}".format(ARTIST)):
         os.mkdir(r"html\{}".format(ARTIST))

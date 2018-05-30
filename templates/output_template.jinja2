@@ -3,19 +3,22 @@
   <head>
     <title>{{ artist }} Analysis</title>
     <link rel="stylesheet" href="{{ style_url }}">
+    <meta charset="utf-8" />
   </head>
   <body>
     <h1>Analysis of the {{ artist }}</h1>
     <h2>Typical Concert</h2>
     <ul>
       <li>Total Concerts: {{ num_concerts }}</li>
+      <li>Total Number of Songs: {{ total_songs }}</li>
       <li>Average Concert Length (w/ Encores): {{ concert_len }} songs</li>
+      <li>Average Covers per Concert: {{ avg_covers }} songs</li>
       <li>Average Number of Sets: {{ num_sets }}</li>
       {% for i, set_length in set_lengths %}
         <li>Set {{ i + 1 }}: {{ set_length }} songs</li>
          <ul>
-          <li>Number of unique set {{ i + 1}}s: {{ num_solo_sets[i] }}</li>
-          <li>Number of duplicate set {{ i + 1}}s: {{ num_multiple_sets[i] }}</li>
+          <li>Number of Sets {{ i + 1}}s Played Once: {{ num_solo_sets[i] }}</li>
+          <li>Number of Sets Played {{ i + 1}}s Multiple Times: {{ num_multiple_sets[i] }}</li>
           <li>Most Played Songs in Set {{ i + 1 }}:
             <ol>
               {% for song in common_set_songs[i] %}
@@ -47,18 +50,25 @@
       {% endfor %}
     <li>Average Encore Length: {{ encore_length }}</li>
       <ul>
-        <li>Number of unique encores: {{ num_solo_encores }}</li>
-        <li>Number of duplicate encores: {{ num_multiple_encores }}</li>
-        <li>Most Played Encore Songs:
+        <li>Number of Encores Played Once: {{ num_solo_encores }}</li>
+        <li>Number of Encores Played Multiple Times: {{ num_multiple_encores }}</li>
+        <li>Most Played Encores:
           <ol>
-            {% for song in common_encore_songs %}
+            {% for song in common_encores %}
               <li>{{ song[0]|join(" > ") }} - {{ song[1] }}</li>
             {% endfor %}
           </ol>
         </li>
-        <li>Least Played Encore Songs:
+        <li>Most Played Encore Songs:
           <ol>
-            {% for song in uncommon_encores %}
+            {% for song in common_encore_songs %}
+              <li>{{ song[0] }} - {{ song[1] }}</li>
+            {% endfor %}
+          </ol>
+        </li>
+        <li>Least Played Encores:
+          <ol>
+            {% for song in uncommon_encore_songs %}
               <li>{{ song[0]|join(" > ") }} - {{ song[1] }}</li>
             {% endfor %}
           </ol>
@@ -116,23 +126,37 @@
     <br/>
     {{ world_graph }}
     <br/>
-    <h2>All Songs - {{ num_songs }}</h2>
+    <h2>All Songs - {{ all_songs|length }}</h2>
     <ol>
       {% for song in all_songs %}
         <li>{{ song }}</li>
       {% endfor %}
     </ol>
     <br/>
-    <h2>All Original Songs - {{ num_originals }}</h2>
+    <h2>All Original Songs - {{ all_originals|length }}</h2>
     <ol>
       {% for song in all_originals %}
         <li>{{ song }}</li>
       {% endfor %}
     </ol>
-    <h2>All Covered Songs - {{ num_covers }}</h2>
+    <h2>Covers</h2>
+    <h3>Total Times Covers Played - {{ total_cover_plays }}</h3>
+    <h3>All Covered Songs - {{ all_covers|length }}</h3>
     <ol>
-      {% for song in all_covers %}
-        <li>{{ song }}</li>
+      {% for cover in all_covers %}
+        <li>{{ cover }}</li>
+      {% endfor %}
+    </ol>
+    <h3>All Covered Artists - {{ total_artists_covered }}</h3>
+    <ol>
+      {% for artist, num in all_covered_artists %}
+        <li>{{ artist }} - {{ num }}
+          <ol>
+            {% for song, num_song in artist_to_songs[artist] %}
+              <li>{{ song }} - {{ num_song }}</li>
+            {% endfor %}
+          </ol>
+        </li>
       {% endfor %}
     </ol>
   </body>
