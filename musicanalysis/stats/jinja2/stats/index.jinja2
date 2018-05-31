@@ -1,0 +1,15 @@
+{% import 'main/includes/helpers.jinja2' as helpers %}
+
+{{  helpers.display_header("Music Analysis", [static('main/styles/style.css')]) }}
+<h1>Music Stats Overview</h1>
+<form>
+    <input title="Add Musician Data: " type="text" name="add-musician">
+    <input type="submit" value="Add">
+</form>
+<br/>
+<form>
+    <input title="Find Musician" type="search" name="search-musician" value="">
+    <input type="submit" value="Search">
+</form>
+<a href="{{ url('main:index') }}">Home</a>
+{{  helpers.display_footer() }}

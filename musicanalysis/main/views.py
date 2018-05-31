@@ -3,5 +3,4 @@ from django.shortcuts import render
 # Create your views here.
 def index(request):
     context = {}
-    return render(request, 'stats/index.jinja2', context)
-
+    return render(request, 'main/index.jinja2', context)

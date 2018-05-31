@@ -1,0 +1,6 @@
+{% import 'main/includes/helpers.jinja2' as helpers %}
+
+{{  helpers.display_header("Music Analysis", [static('main/styles/style.css')]) }}
+<h1>Welcome to the Music Analysis Site</h1>
+<a href="{{ url('stats:index') }}">Live Music Stats Overview</a>
+{{  helpers.display_footer() }}
