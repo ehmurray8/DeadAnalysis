@@ -6,7 +6,7 @@
     </ol>
 {%- endmacro %}
 
-{% macro display_ordered_list(list, header='', add_length=False) -%}
+{% macro display_ordered_list(list, header='', add_length=True) -%}
     {% if header != '' %}
         <h2>header {% if add_length %} - {{ list|length }} {% endif %}</h2>
     {% endif %}

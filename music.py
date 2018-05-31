@@ -127,7 +127,7 @@ class MusicData(object):
         self.venues = {}  # type: Dict[str: Venue]
         self.tours = []  # type: List[Tour]
         self.concerts = []  # type: List[Concert]
-        self.songs = {}  # type: Dict[str: Song]
+        self.songs = []  # type: List[Song]
 
     def get_maps(self):
         return create_graph_code(self)

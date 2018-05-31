@@ -12,6 +12,9 @@ class Tour(object):
     def __str__(self):
         return self.name
 
+    def __eq__(self, other):
+        return self.name == other.name
+
 
 class Set(object):
     def __init__(self, elems=list()):
@@ -74,6 +77,9 @@ class Concert(object):
     def all_songs(self):
         return [song for s in self.sets + [self.encores] for song in s]
 
+    def __eq__(self, other):
+        return self.date == other.date and self.venue_id == other.venue_id
+
     def __repr__(self):
         return self.date
 
@@ -104,5 +110,5 @@ class Venue(object):
             return "{}, {}, {}".format(self.name, self.city, self.state)
 
     def __eq__(self, other):
-        return self.name == other.name
+        return self.name == other.name and self.city == other.city
 

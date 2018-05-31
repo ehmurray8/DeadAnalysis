@@ -60,11 +60,10 @@ def get_song_data():
                 venue_obj = Venue(venue["name"], city["name"], state, state_code, country["name"],
                                   country["code"], lat, long, fips)
                 music.venues[venue_id] = venue_obj
-            if tour is not None and tour not in [tour.name for tour in music.tours]:
+            if tour is not None:
                 tour = Tour(tour)
-                music.tours.append(tour)
-            elif tour is not None:
-                tour = [t for t in music.tours if t.name == tour][0]
+                if tour not in music.tours:
+                    music.tours.append(tour)
 
             sets = []
             encores = []
@@ -75,11 +74,9 @@ def get_song_data():
                         orig_artist = song["cover"]["name"]
                     else:
                         orig_artist = ARTIST
-                    if song["name"] not in music.songs:
-                        song = Song(ARTIST, orig_artist, song["name"])
-                        music.songs[song.name] = song
-                    else:
-                        song = music.songs[song["name"]]
+                    song = Song(ARTIST, orig_artist, song["name"])
+                    if song not in music.songs:
+                        music.songs.append(song)
                     if "encore" in s:
                         encores.append(song)
                     else:
