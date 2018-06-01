@@ -9,6 +9,12 @@ api_key.py
 # C extensions
 *.so
 
+_keys.py
+
+*.sqlite3
+*.sqlite
+*.sqlite3-journal
+
 # PyCharm
 .idea/
 
