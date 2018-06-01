@@ -79,14 +79,21 @@ def get_song_data(artist):
             fips = get_fips(coordinates)
             venue_name = venue["name"]
             country = city["country"]
+            venue_exists = True
             try:
-                lat, long = coordinates["lat"], coordinates["long"]
-            except KeyError:
-                lat, long = -1, -1
-            venue = Venue.objects.get_or_create(name=venue_name, city=city["name"], state=state, state_code=state_code,
-                                                country=country["name"], country_code=country["code"], latitude=lat,
-                                                longitude=long, fips=fips)[0]
-            venue.save()
+                venue = Venue.objects.get(name=venue_name)
+            except Venue.DoesNotExist:
+                venue_exists = False
+
+            if not venue_exists:
+                try:
+                    lat, long = coordinates["lat"], coordinates["long"]
+                except KeyError:
+                    lat, long = -1, -1
+                venue = Venue(name=venue_name, city=city["name"], state=state, state_code=state_code,
+                              country=country["name"], country_code=country["code"], latitude=lat,
+                              longitude=long, fips=fips)
+                venue.save()
             sets = []
             encores = []
             for s in setlist["sets"]["set"]:

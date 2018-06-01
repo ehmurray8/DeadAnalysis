@@ -3,10 +3,11 @@
 {{  helpers.display_header("Music Analysis", [static('main/styles/style.css'), static('stats/styles/style.css')],
         [static('stats/scripts/stats.js')], [False, True]) }}
 <h1>Music Stats Overview</h1>
-{% for artist, percent in in_progress_artists.items() %}
+{% for artist, percent in in_progress_artists|dictsort(by="value")|reverse %}
     <div class='add-musician-progress' id="add-musician-progress-{{ loop.index0 }}">
         <h3>{{ artist }}</h3>
         <div class='add-musician-bar' id="add-musician-bar-{{ loop.index0 }}" style="width: {{ percent }}%">{{ percent }}%</div>
+        <a href="{{ url('stats:artist', kwargs={'artist':artist}) }}" id="musician-button-{{ loop.index0 }}" style="display: none;">{{ artist }}</a>
     </div>
     <br/>
 {% endfor %}
@@ -15,13 +16,18 @@
     <input title="Find Musician" type="search" name="search-musician" value="">
     <input type="submit" value="Search">
 </form>
-<p>{{ search_status }}</p>
+<br/>
+{% if search_status %}
+    {{ search_status }}
+{% endif %}
 <br/>
 <h2>Artists</h2>
 <div>
 {% for artist in artists %}
     <a href="{{ url('stats:artist', kwargs={'artist':artist}) }}">{{ artist }}</a>
+    <br/>
 {% endfor %}
 </div>
+<br/>
 <a href="{{ url('main:index') }}">Home</a>
 {{  helpers.display_footer() }}
