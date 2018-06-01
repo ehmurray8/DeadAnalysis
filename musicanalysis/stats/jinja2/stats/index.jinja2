@@ -1,15 +1,27 @@
 {% import 'main/includes/helpers.jinja2' as helpers %}
 
-{{  helpers.display_header("Music Analysis", [static('main/styles/style.css')]) }}
+{{  helpers.display_header("Music Analysis", [static('main/styles/style.css'), static('stats/styles/style.css')],
+        [static('stats/scripts/stats.js')], [False, True]) }}
 <h1>Music Stats Overview</h1>
-<form>
-    <input title="Add Musician Data: " type="text" name="add-musician">
-    <input type="submit" value="Add">
-</form>
+{% for artist, percent in in_progress_artists.items() %}
+    <div class='add-musician-progress' id="add-musician-progress-{{ loop.index0 }}">
+        <h3>{{ artist }}</h3>
+        <div class='add-musician-bar' id="add-musician-bar-{{ loop.index0 }}">{{ percent }}%</div>
+    </div>
+    <br/>
+{% endfor %}
 <br/>
 <form>
     <input title="Find Musician" type="search" name="search-musician" value="">
     <input type="submit" value="Search">
 </form>
+<p>{{ search_status }}</p>
+<br/>
+<h2>Artists</h2>
+<div>
+{% for artist in artists %}
+    <a href="{{ url('stats:artist', kwargs={'artist':artist}) }}">{{ artist }}</a>
+{% endfor %}
+</div>
 <a href="{{ url('main:index') }}">Home</a>
 {{  helpers.display_footer() }}

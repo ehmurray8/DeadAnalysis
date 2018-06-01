@@ -1,0 +1,6 @@
+{% import 'main/includes/helpers.jinja2' as helpers %}
+
+
+{{  helpers.display_header(artist + " Analysis", [static('main/styles/style.css'), static('stats/styles/style.css')]) }}
+<h1>{{ artist }}</h1>
+{{  helpers.display_footer() }}

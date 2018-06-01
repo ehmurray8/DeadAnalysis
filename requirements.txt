@@ -8,3 +8,4 @@ Fiona==1.7.11.post1
 pyproj==1.9.5.1
 numpy==1.14.1+mkl
 Jinja2==2.10
+celery==4.1.1
