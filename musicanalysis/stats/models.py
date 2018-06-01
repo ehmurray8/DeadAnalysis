@@ -35,7 +35,7 @@ class Set(models.Model):
     songs = models.ManyToManyField(Song)
 
     def __str__(self):
-        return ", ".join(self.songs.all())
+        return ", ".join([str(song) for song in self.songs.all()])
 
 
 class Venue(models.Model):

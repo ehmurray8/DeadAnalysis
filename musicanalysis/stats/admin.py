@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Tour, Set, Song, Concert, Venue, Artist
+from .models import Tour, Set, Song, Concert, Venue, Artist, SetlistFMStatus
 
 # Register your models here.
 
@@ -17,3 +17,4 @@ admin.site.register(Song)
 admin.site.register(Concert, ConcertAdmin)
 admin.site.register(Venue)
 admin.site.register(Artist)
+admin.site.register(SetlistFMStatus)

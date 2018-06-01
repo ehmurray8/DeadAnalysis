@@ -6,7 +6,7 @@
 {% for artist, percent in in_progress_artists.items() %}
     <div class='add-musician-progress' id="add-musician-progress-{{ loop.index0 }}">
         <h3>{{ artist }}</h3>
-        <div class='add-musician-bar' id="add-musician-bar-{{ loop.index0 }}">{{ percent }}%</div>
+        <div class='add-musician-bar' id="add-musician-bar-{{ loop.index0 }}" style="width: {{ percent }}%">{{ percent }}%</div>
     </div>
     <br/>
 {% endfor %}

@@ -9,7 +9,6 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-
 HEADERS = {
     'x-api-key': settings.SETLIST_FM_API_KEY,
     'accept': "application/json",
@@ -19,9 +18,9 @@ HEADERS = {
 
 def setup_status(artist):
     urlp.unquote(artist, encoding="utf-8")
-    artist = Artist.objects.get_or_create(name=artist)
+    artist = Artist.objects.get_or_create(name=artist)[0]
     try:
-        status = SetlistFMStatus.objects.filter(artist=artist)[0]
+        status = SetlistFMStatus.objects.get(artist__name=artist.name)
         status.finished = False
         status.published = None
         status.started = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -84,9 +83,9 @@ def get_song_data(artist):
                 lat, long = coordinates["lat"], coordinates["long"]
             except KeyError:
                 lat, long = -1, -1
-            venue = Venue.objects.get_or_create(name=venue["name"], city=city["name"], state=state, state_code=state_code,
+            venue = Venue.objects.get_or_create(name=venue_name, city=city["name"], state=state, state_code=state_code,
                                                 country=country["name"], country_code=country["code"], latitude=lat,
-                                                longitude=long, fips=fips)
+                                                longitude=long, fips=fips)[0]
             venue.save()
             sets = []
             encores = []
@@ -155,6 +154,7 @@ def get_song_data(artist):
         conn.close()
     status.finished=True
     status.published = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    status.save()
 
 
 def get_fips(coords) -> str:
