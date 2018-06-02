@@ -1,5 +1,89 @@
 {% import 'main/includes/helpers.jinja2' as helpers %}
+{% import 'stats/inclues/helpers.jinja2' as stat_helpers %}
 
 {{  helpers.display_header("Music Analysis", [static('main/styles/style.css'), static('stats/styles/style.css')]) }}
+
+<h1>Analysis of the {{ artist }}</h1>
+<h2>Typical Concert</h2>
+<ul>
+    <li>Total Concerts: {{ num_concerts }}</li>
+    <li>Total Number of Songs: {{ total_songs }}</li>
+    <li>Average Concert Length (w/ Encores): {{ concert_len }} songs</li>
+    <li>Average Covers per Concert: {{ avg_covers }} songs</li>
+    <li>Average Number of Sets: {{ num_sets }}</li>
+    {% for i, set_length in set_lengths %}
+        <li>Set {{ i + 1 }}: {{ set_length }} songs
+            <ul>
+                <li>Number of Sets {{ i + 1}}s Played Once: {{ num_solo_sets[i] }}</li>
+                <li>Number of Sets {{ i + 1}}s Played Multiple Times: {{ num_multiple_sets[i] }}</li>
+                <li>Most Played Songs in Set {{ i + 1 }}:
+                    {{ stat_helpers.display_songs_values(common_set_songs[i]) }}
+                </li>
+            </ul>
+        </li>
+        <li>Least Played Songs in Set {{ i + 1 }}:
+            {{ stat_helpers.display_songs_values(uncommon_set_songs[i]) }}
+        </li>
+        {% if num_multiple_sets[i] %}
+            <li>Most Repeated Set {{ i + 1 }}s:
+                <ol>
+                {% for cs in common_sets[i] %}
+                    {% if cs[1] %}
+                        <li>Set played {{ cs[1] }} times, on: {{ top_set_dates[i][loop.index0]|join(", ") }}
+                            <ol>
+                            {% for song in cs[0] %}
+                                <li>{{ song }}</li>
+                            {% endfor %}
+                            </ol>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+                </ol>
+            </li>
+        {% endif %}
+    {% endfor %}
+</ul>
+<li>Average Encore Length: {{ encore_length }}</li>
+<ul>
+    <li>Number of Encores Played Once: {{ num_solo_encores }}</li>
+    <li>Number of Encores Played Multiple Times: {{ num_multiple_encores }}</li>
+    {{ stat_helpers.display_encores("Most", common_encores) }}
+    <li>Most Played Encore Songs:
+        {{ stat_helpers.display_songs_values(common_encore_songs) }}
+    </li>
+    {{ stat_helpers.display_encores("Least", uncommon_encores) }}
+</ul>
+<h2>Top {{top_songs}} Songs</h2>
+{{ stat_helpers.display_ordered_list(top_songs_list) }}
+{{ stat_helpers.songs_by("Day", day_song_zip_info) }}
+{{ stat_helpers.songs_by("Month", month_song_zip_info) }}
+{{ stat_helpers.songs_by("Year", year_song_zip_info) }}
+
+{{ county_graph }}
+<br/>
+{{ state_graph }}
+<br/>
+{{ world_graph }}
+<br/>
+
+{{ stat_helpers.display_ordered_list(all_songs, "All Songs") }}
+<br/>
+{{ stat_helpers.display_ordered_list(all_originals, "All Original Songs") }}
+<br/>
+
+<h3>Total Times Covers Played - {{ total_cover_plays }}</h3>
+{{ stat_helpers.display_ordered_list(all_covers, "All Covered Songs") }}
+<h3>All Covered Artists - {{ total_artists_covered }}</h3>
+<ol>
+    {% for artist, num in all_covered_artists %}
+        <li>{{ artist }} - {{ num }}
+            <ol>
+            {% for song, num_song in artist_to_songs[artist] %}
+                <li>{{ song }} - {{ num_song }}</li>
+            {% endfor %}
+            </ol>
+        </li>
+    {% endfor %}
+</ol>
 
 {{ helpers.display_footer() }}

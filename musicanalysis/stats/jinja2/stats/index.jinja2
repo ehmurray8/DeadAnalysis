@@ -23,7 +23,7 @@
 <br/>
 <h2>Artists</h2>
 <div>
-{% for artist in artists %}
+{% for artist in artists|sort %}
     <a href="{{ url('stats:artist', kwargs={'artist':artist}) }}">{{ artist }}</a>
     <br/>
 {% endfor %}

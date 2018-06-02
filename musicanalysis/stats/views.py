@@ -3,7 +3,7 @@ from django.http import HttpResponse
 from django.contrib import messages
 from stats.tasks import get_song_data, setup_status
 import urllib.parse as urlp
-from .models import SetlistFMStatus, Artist
+from .models import SetlistFMStatus, Artist, Concert
 import json
 
 
@@ -91,5 +91,46 @@ def artist(request, artist):
     return render(request, 'stats/artist.jinja2', context)
 
 
-def initial(request):
-    pass
+def initial(request, artist):
+    context = {}
+    context["artist"] = artist
+    context["num_concerts"] = len(Concert.objects.filter(artist__name=artist))
+
+
+
+    context["total_songs"] = None
+    context["concert_len"] = None
+    context["avg_covers"] = None
+    context["num_sets"] = None
+    context["set_lengths"] = None
+    context["num_solo_sets"] = None
+    context["num_multiple_sets"] = None
+    context["common_set_songs"] = None
+    context["uncommon_set_songs"] = None
+    context["common_sets"] = None
+    context["top_set_dates"] = None
+    context["encore_length"] = None
+    context["num_solo_encores"] = None
+    context["num_multiple_encores"] = None
+    context["common_encores"] = None
+    context["common_encore_songs"] = None
+    context["uncommon_encores"] = None
+    context["top_songs"] = None
+    context["top_songs_list"] = None
+    context["day_song_zip_info"] = None
+    context["month_song_zip_info"] = None
+    context["year_song_zip_info"] = None
+    context["county_graph"] = None
+    context["state_graph"] = None
+    context["country_graph"] = None
+    context["all_songs"] = None
+    context["all_originals"] = None
+    context["total_cover_plays"] = None
+    context["all_covers"] = None
+    context["total_artists_covered"] = None
+    context["all_covered_artists"] = None
+    context["artist_to_songs"] = None
+
+
+
+    return HttpResponse(artist)
