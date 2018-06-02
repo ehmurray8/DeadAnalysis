@@ -3,8 +3,9 @@ from django.http import HttpResponse
 from django.contrib import messages
 from stats.tasks import get_song_data, setup_status
 import urllib.parse as urlp
-from .models import SetlistFMStatus, Artist, Concert
 import json
+from .models import SetlistFMStatus, Artist, Concert
+from .map_helper import create_graph_code
 
 
 def _get_statuses():
@@ -120,9 +121,7 @@ def initial(request, artist):
     context["day_song_zip_info"] = None
     context["month_song_zip_info"] = None
     context["year_song_zip_info"] = None
-    context["county_graph"] = None
-    context["state_graph"] = None
-    context["country_graph"] = None
+    context["county_graph"], context["state_graph"], context["country_graph"] = create_graph_code(artist)
     context["all_songs"] = None
     context["all_originals"] = None
     context["total_cover_plays"] = None
