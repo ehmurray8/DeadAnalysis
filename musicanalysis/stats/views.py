@@ -6,6 +6,8 @@ import urllib.parse as urlp
 import json
 from .models import SetlistFMStatus, Artist, Concert
 from .map_helper import create_graph_code
+from .initial_report import basic_info
+from .stats_config import TOP_SONGS
 
 
 def _get_statuses():
@@ -51,7 +53,7 @@ def index(request):
                 SetlistFMStatus.objects.filter(artist__name=search_musician, finished=True).exists():
             return redirect('stats:artist', artist=search_musician)
         elif SetlistFMStatus.objects.filter(finished=False, exists=True, artist__name=search_musician).exists():
-            ss = "Downloaing setlist.fm data in progress, for {}.".format(search_musician)
+            ss = "Downloading setlist.fm data in progress, for {}.".format(search_musician)
             messages.add_message(request, messages.INFO, ss)
             return redirect("stats:index")
         else:
@@ -95,14 +97,17 @@ def artist(request, artist):
 def initial(request, artist):
     context = {}
     context["artist"] = artist
-    context["num_concerts"] = len(Concert.objects.filter(artist__name=artist))
 
 
+    num_concerts, total_songs, usual_num_sets, concert_len, avg_covers, all_songs, all_originals, all_encores,\
+        all_covers, total_cover_plays, encore_length = basic_info(artist)
+    context["num_concerts"] = num_concerts
+    context["total_songs"] = total_songs
+    context["num_sets"] = usual_num_sets
+    context["avg_covers"] = avg_covers
+    context["concert_len"] = concert_len
 
-    context["total_songs"] = None
-    context["concert_len"] = None
-    context["avg_covers"] = None
-    context["num_sets"] = None
+
     context["set_lengths"] = None
     context["num_solo_sets"] = None
     context["num_multiple_sets"] = None
@@ -110,26 +115,35 @@ def initial(request, artist):
     context["uncommon_set_songs"] = None
     context["common_sets"] = None
     context["top_set_dates"] = None
-    context["encore_length"] = None
+
+
+
+    context["encore_length"] = encore_length
     context["num_solo_encores"] = None
     context["num_multiple_encores"] = None
     context["common_encores"] = None
-    context["common_encore_songs"] = None
+    context["common_encore_songs"] = all_encores
     context["uncommon_encores"] = None
-    context["top_songs"] = None
-    context["top_songs_list"] = None
+    context["top_songs"] = TOP_SONGS
+
+
+
     context["day_song_zip_info"] = None
     context["month_song_zip_info"] = None
     context["year_song_zip_info"] = None
+
+
     context["county_graph"], context["state_graph"], context["country_graph"] = create_graph_code(artist)
-    context["all_songs"] = None
-    context["all_originals"] = None
-    context["total_cover_plays"] = None
-    context["all_covers"] = None
+
+
+    context["all_songs"] = all_songs
+    context["all_originals"] = all_originals
+    context["total_cover_plays"] = total_cover_plays
+    context["all_covers"] = all_covers
     context["total_artists_covered"] = None
     context["all_covered_artists"] = None
     context["artist_to_songs"] = None
 
 
 
-    return HttpResponse(artist)
+    return render(request, 'stats/initial_artist.jinja2', context=context)

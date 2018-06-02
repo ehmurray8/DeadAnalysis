@@ -36,7 +36,7 @@ def create_graph_code(artist: str):
     length = len(sorted_concert_nums)
     size = 5
     bins = [sorted_concert_nums[i:i+int(length/size)] for i in range(0, length, int(length/size))]
-    bins = [1] + [max(bin) for bin in bins]
+    bins = [max(bin) if max(bin) else 1 for bin in bins]
     bins = list(sorted(set(bins)))
     fig = ff.create_choropleth(fips=list(frequencies.keys()), values=list(frequencies.values()),
                                binning_endpoints=bins,
@@ -51,7 +51,8 @@ def create_graph_code(artist: str):
                  locations=[loc[:2] for loc in frequencies.keys()], z=list(frequencies.values()),
                  locationmode='USA-states',
                  marker=dict(line=dict(color='rgb(180,180,180)', width=2)), colorbar=dict(title="Number of Concerts"))]
-    layout = dict(title='{} Concerts by State'.format(artist),
+    layout = dict(title='{} Concerts by State'.format(artist), xaxis=dict(fixedrange=True),
+                  yaxis=dict(autorange='reversed', fixedrange=True),
                   geo=dict(scope='usa', projection=dict(type='albers usa'), showlakes=True,
                            lakecolor='rgb(255, 255, 255)'), width=1200, height=800)
     fig = dict(data=data, layout=layout)
@@ -68,9 +69,11 @@ def create_graph_code(artist: str):
                  colorbar = dict(autotick=False, title='Number of Shows'))]
 
     layout = dict(title='{} Shows by Country'.format(artist), geo=dict(showframe=True, showcoastlines=True,
+                  xaxis=dict(fixedrange=True), yaxis=dict(fixedrange=True), dragmode=False,
                   projection=dict(type='Mercator')), width=1200, height=800)
     fig = dict(data=data, layout=layout)
     plot_world = offline.plot(fig, validate=False, filename=os.path.join('{} Shows World.html'.format(artist)),
-                              auto_open=False, show_link=False, config={'displayModeBar': False})
+                              auto_open=False, show_link=False, config={'displayModeBar': False, 'scrollZoom': True,
+                                                                        'showAxisDragHandles': True})
     plot_world_code = get_plot(plot_world)
     return plot_county_code, plot_state_code, plot_world_code

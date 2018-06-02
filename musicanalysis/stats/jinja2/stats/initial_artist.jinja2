@@ -1,5 +1,5 @@
 {% import 'main/includes/helpers.jinja2' as helpers %}
-{% import 'stats/inclues/helpers.jinja2' as stat_helpers %}
+{% import 'stats/includes/helpers.jinja2' as stat_helpers %}
 
 {{  helpers.display_header("Music Analysis", [static('main/styles/style.css'), static('stats/styles/style.css')]) }}
 
@@ -10,7 +10,8 @@
     <li>Total Number of Songs: {{ total_songs }}</li>
     <li>Average Concert Length (w/ Encores): {{ concert_len }} songs</li>
     <li>Average Covers per Concert: {{ avg_covers }} songs</li>
-    <li>Average Number of Sets: {{ num_sets }}</li>
+    <li>Usual Number of Sets: {{ num_sets }}</li>
+    {#
     {% for i, set_length in set_lengths %}
         <li>Set {{ i + 1 }}: {{ set_length }} songs
             <ul>
@@ -42,28 +43,36 @@
             </li>
         {% endif %}
     {% endfor %}
+    #}
 </ul>
+
 <li>Average Encore Length: {{ encore_length }}</li>
 <ul>
+    {#
     <li>Number of Encores Played Once: {{ num_solo_encores }}</li>
     <li>Number of Encores Played Multiple Times: {{ num_multiple_encores }}</li>
     {{ stat_helpers.display_encores("Most", common_encores) }}
+    #}
     <li>Most Played Encore Songs:
         {{ stat_helpers.display_songs_values(common_encore_songs) }}
     </li>
+    {#
     {{ stat_helpers.display_encores("Least", uncommon_encores) }}
+    #}
 </ul>
 <h2>Top {{top_songs}} Songs</h2>
-{{ stat_helpers.display_ordered_list(top_songs_list) }}
+{{ stat_helpers.display_ordered_list(all_songs[:top_songs]) }}
+{#
 {{ stat_helpers.songs_by("Day", day_song_zip_info) }}
 {{ stat_helpers.songs_by("Month", month_song_zip_info) }}
 {{ stat_helpers.songs_by("Year", year_song_zip_info) }}
+#}
 
-{{ county_graph }}
+{{ county_graph | safe }}
 <br/>
-{{ state_graph }}
+{{ state_graph | safe }}
 <br/>
-{{ world_graph }}
+{{ country_graph | safe }}
 <br/>
 
 {{ stat_helpers.display_ordered_list(all_songs, "All Songs") }}
@@ -73,6 +82,8 @@
 
 <h3>Total Times Covers Played - {{ total_cover_plays }}</h3>
 {{ stat_helpers.display_ordered_list(all_covers, "All Covered Songs") }}
+
+{#
 <h3>All Covered Artists - {{ total_artists_covered }}</h3>
 <ol>
     {% for artist, num in all_covered_artists %}
@@ -85,5 +96,5 @@
         </li>
     {% endfor %}
 </ol>
-
+#}
 {{ helpers.display_footer() }}

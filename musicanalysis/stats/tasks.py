@@ -111,16 +111,19 @@ def get_song_data(artist):
                     try:
                         song = Song.objects.filter(orig_artist=orig_artist).get(song_name=song["name"])
                     except Song.DoesNotExist:
-                        song = Song(song_name=song["name"])
-                        song.save()
-                        orig_artist.song_set.add(song)
-                        orig_artist.save()
+                        if song["name"]:
+                            song = Song(song_name=song["name"])
+                            song.save()
+                            orig_artist.song_set.add(song)
+                            orig_artist.save()
+                        else:
+                            continue
                     if "encore" in s:
                         encores.append(song)
                     else:
                         songs.append(song)
 
-                if "encore" not in s:
+                if "encore" not in s and len(songs):
                     _set = Set()
                     sets.append(_set)
                     _set.save()
