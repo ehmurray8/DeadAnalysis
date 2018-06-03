@@ -33,13 +33,3 @@
     {% endfor %}
 {% endmacro -%}
 
-{% macro display_encores(specifier, list) -%}
-    <li>{{ specifier }} Played Encores:
-        <ol>
-            {% for song in list %}
-                <li>{{ song[0]|join(" > ") }} - {{ song[1] }}</li>
-            {% endfor %}
-        </ol>
-    </li>
-{%- endmacro %}
-

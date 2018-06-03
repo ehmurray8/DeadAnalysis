@@ -99,8 +99,10 @@ def initial(request, artist):
     context["artist"] = artist
 
 
-    num_concerts, total_songs, usual_num_sets, concert_len, avg_covers, all_songs, all_originals, all_encores,\
-        all_covers, total_cover_plays, encore_length = basic_info(artist)
+    num_concerts, total_songs, usual_num_sets, concert_len, avg_covers, all_songs, all_originals, encore_songs,\
+        all_covers, total_cover_plays, encore_length, encores, num_solo_encores, num_multiple_encores,\
+        num_covered_plays, covered_artists = basic_info(artist)
+
     context["num_concerts"] = num_concerts
     context["total_songs"] = total_songs
     context["num_sets"] = usual_num_sets
@@ -119,11 +121,10 @@ def initial(request, artist):
 
 
     context["encore_length"] = encore_length
-    context["num_solo_encores"] = None
-    context["num_multiple_encores"] = None
-    context["common_encores"] = None
-    context["common_encore_songs"] = all_encores
-    context["uncommon_encores"] = None
+    context["num_solo_encores"] = num_solo_encores
+    context["num_multiple_encores"] = num_multiple_encores
+    context["common_encores"] = encores
+    context["common_encore_songs"] = encore_songs
     context["top_songs"] = TOP_SONGS
 
 
@@ -140,8 +141,8 @@ def initial(request, artist):
     context["all_originals"] = all_originals
     context["total_cover_plays"] = total_cover_plays
     context["all_covers"] = all_covers
-    context["total_artists_covered"] = None
-    context["all_covered_artists"] = None
+    context["total_artists_covered"] = num_covered_plays
+    context["all_covered_artists"] = covered_artists
     context["artist_to_songs"] = None
 
 
