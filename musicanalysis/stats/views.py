@@ -57,7 +57,7 @@ def index(request):
             messages.add_message(request, messages.INFO, ss)
             return redirect("stats:index")
         else:
-            setup_status(search_musician)
+            a, s = setup_status(search_musician)
             context["in_progress_artists"] = _get_statuses()
             get_song_data.delay(search_musician)
             ss = "Unable to find {}, attempting to download artist information from setlist.fm.".format(search_musician)

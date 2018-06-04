@@ -17,10 +17,14 @@ HEADERS = {
 
 
 def setup_status(artist):
-    urlp.unquote(artist, encoding="utf-8")
-    artist = Artist.objects.get_or_create(name=artist)[0]
+    artist_name = urlp.unquote(artist, encoding="utf-8")
     try:
-        status = SetlistFMStatus.objects.get(artist__name=artist.name)
+        artist_obj = Artist.objects.get(name=artist_name)
+    except Artist.DoesNotExist:
+        artist_obj = Artist(name=artist_name)
+        artist_obj.save()
+    try:
+        status = SetlistFMStatus.objects.get(artist__name=artist_obj.name)
         status.finished = False
         status.published = None
         status.started = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -28,9 +32,12 @@ def setup_status(artist):
     except (IndexError, SetlistFMStatus.DoesNotExist):
         status = SetlistFMStatus()
         status.save()
-        artist.setlistfmstatus_set.add(status)
-        artist.save()
-    return artist, status
+        artist_obj.setlistfmstatus_set.clear()
+        artist_obj.save()
+        artist_obj.setlistfmstatus_set.add(status)
+        artist_obj.save()
+        # raise RuntimeError()
+    return artist_obj, status
 
 
 @app.task
@@ -43,19 +50,22 @@ def get_song_data(artist):
         conn = http.client.HTTPSConnection("api.setlist.fm")
         conn.connect()
         logger.info("{} Page {}".format(artist.name, i))
-        if mbid is not None:
+        if mbid is None:
             conn.request("GET", "/rest/1.0/search/setlists?artistName={}&p={}" .format(urlp.quote_plus(artist.name), i),
                          headers=HEADERS)
         else:
-            conn.request("GET", "/rest/1.0/{}/setlists".format(mbid))
+            conn.request("GET", "/rest/1.0/artist/{}/setlists?p={}".format(mbid, i), headers=HEADERS)
         res = conn.getresponse()
         data = res.read()
         main_data = json.loads(data.decode("utf-8"))
         if "code" in main_data and int(main_data["code"]) == 404:
             status.exists = False
             status.save()
+            artist.setlistfmstatus_set.clear()
+            artist.save()
             artist.delete()
             artist.save()
+            break
         setlists = main_data["setlist"]
         total = float(main_data["total"])
         items = float(main_data["itemsPerPage"])
