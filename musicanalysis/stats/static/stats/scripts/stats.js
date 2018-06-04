@@ -23,4 +23,3 @@ function progress() {
 $(document).ready(function() {
     progress();
 });
-

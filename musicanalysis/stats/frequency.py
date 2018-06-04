@@ -5,8 +5,9 @@ class FrequencyDict(object):
     def __init__(self):
         self.freq_dict = defaultdict(int)
 
-    def add(self, song, num=1):
-        self.freq_dict[song] += num
+    def add(self, item, num=1):
+        if item != "" and item != " ":
+            self.freq_dict[item] += num
 
     def sorted_list(self, descending):
         return [(key, self.freq_dict[key]) for key in sorted(self.freq_dict, key=self.freq_dict.get, reverse=descending)]

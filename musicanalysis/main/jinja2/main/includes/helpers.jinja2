@@ -1,7 +1,8 @@
-{% macro display_header(title, stylesheets, scripts=[], async=[]) -%}
-<!DOCTYPE html>
-<html>
-    <head>
+{% macro display_top_header(title, stylesheets, scripts=[], async=[]) -%}
+    <!DOCTYPE html>
+    <html>
+        <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
         <title>{{ title }}</title>
         {% for link in stylesheets %}
             <link rel="stylesheet" type="text/css" href="{{ link }}?{{ range(1, 1000000000000) | random }}" >
@@ -14,9 +15,16 @@
                 <script src ="{{ script }}?{{ range(1, 1000000000000) | random }}"></script>
             {% endif %}
         {% endfor %}
-        <meta charset="utf-8" />
+{%- endmacro %}
+
+{% macro display_bottom_header() -%}
     </head>
     <body>
+{%- endmacro %}
+
+{% macro display_header(title, stylesheets, scripts=[], async=[]) -%}
+    {{  display_top_header(title, stylesheets, scrips, async) }}
+    {{  display_bottom_header() }}
 {%- endmacro %}
 
 {% macro display_footer() -%}

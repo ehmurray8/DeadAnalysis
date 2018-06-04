@@ -1,7 +1,7 @@
 from .models import Concert
 from .frequency import FrequencyDict
 from collections import defaultdict
-from .stats_config import TOP_SONGS_BY_DAY, TOP_SONGS_BY_MONTH, TOP_SONGS_BY_YEAR
+from .stats_config import TOP_SONGS_BY_DAY, TOP_SONGS_BY_MONTH, TOP_SONGS_BY_YEAR, FILTER_SONGS
 
 
 def basic_info(artist):
@@ -57,7 +57,7 @@ def basic_info(artist):
     originals = ["{} - {}".format(song, num) for song, num in  originals.sorted_top_tuples()]
     encores_songs = encores_songs.sorted_top_tuples()
     num_covered_artists = len(set([song.orig_artist for song, _ in covers.sorted_top_tuples()]))
-    all_covers = ["{} - {}".format(song, num) for song, num in  covers.sorted_top_tuples()]
+    all_covers = ["{} ({}) - {}".format(song, song.orig_artist, num) for song, num in  covers.sorted_top_tuples()]
     avg_encore_length = round(sum(encore_length) / len(encore_length), 2)
     encores = encores.sorted_top_tuples()
     num_solo_encores = sum(1 for _, num in encores if num == 1)
@@ -101,7 +101,8 @@ def _songs_by(artist, units, queries, query_str, num_songs):
         frequencies = FrequencyDict()
         for concert in _concerts.all():
             for song in list(concert.encores.all()) + list([song for _set in concert.sets.all() for song in _set.songs.all()]):
-                frequencies[song.song_name] += 1
+                if song.song_name not in FILTER_SONGS:
+                    frequencies[song.song_name] += 1
         songs_list.append(frequencies.sorted_top_tuples(num_songs))
         unique_songs = [song for song, num in frequencies.sorted_top_tuples() if num == 1]
         for i, song_list in enumerate(songs_list):

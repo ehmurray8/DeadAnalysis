@@ -1,4 +1,4 @@
-FILTER_SONGS = ["Drums", "Space"]
+FILTER_SONGS = ["Drums", "Space", ""]
 
 TOP_SONGS = 50
 TOP_SONGS_BY_YEAR = 10

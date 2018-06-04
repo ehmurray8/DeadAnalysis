@@ -4,10 +4,11 @@ from django.contrib import messages
 from stats.tasks import get_song_data, setup_status
 import urllib.parse as urlp
 import json
-from .models import SetlistFMStatus, Artist
+from .models import SetlistFMStatus, Artist, Venue
 from .map_helper import create_graph_code
 from .initial_report import basic_info, songs_by_day, songs_by_month, songs_by_year, set_info
 from .stats_config import TOP_SONGS, NUM_TOP_SET_SONGS, NUM_TOP_SETS, NUM_TOP_ENCORES, NUM_TOP_COVERS
+from musicanalysis._keys import GOOGLE_MAPS_KEY
 
 
 def _get_statuses():
@@ -88,6 +89,15 @@ def status(request):
     return HttpResponse(json.dumps(context))
 
 
+def venue_locations(request, artist):
+    artist_name = urlp.unquote(artist, encoding="utf-8")
+    locations = []
+    venues = Venue.objects.filter(concert__artist__name=artist_name).all()
+    for i, venue in enumerate(venues):
+        locations.append([venue.name, venue.latitude, venue.longitude, i])
+    return HttpResponse(json.dumps({"locations": locations}))
+
+
 def artist(request, artist):
     context = {}
     context["artist"] = artist
@@ -97,6 +107,7 @@ def artist(request, artist):
 def initial(request, artist):
     context = {}
     context["artist"] = artist
+    context["api_key"] = GOOGLE_MAPS_KEY
 
     num_concerts, total_songs, usual_num_sets, concert_len, avg_covers, all_songs, all_originals, encore_songs,\
         all_covers, total_cover_plays, encore_length, encores, num_solo_encores, num_multiple_encores,\

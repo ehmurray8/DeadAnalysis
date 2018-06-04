@@ -36,7 +36,6 @@ def setup_status(artist):
         artist_obj.save()
         artist_obj.setlistfmstatus_set.add(status)
         artist_obj.save()
-        # raise RuntimeError()
     return artist_obj, status
 
 
@@ -133,7 +132,7 @@ def get_song_data(artist):
                     try:
                         song = Song.objects.filter(orig_artist=orig_artist).get(song_name=song["name"])
                     except Song.DoesNotExist:
-                        if song["name"]:
+                        if song["name"] and song["name"] != " ":
                             song = Song(song_name=song["name"])
                             song.save()
                             orig_artist.song_set.add(song)
