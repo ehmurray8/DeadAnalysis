@@ -4,10 +4,10 @@ from django.contrib import messages
 from stats.tasks import get_song_data, setup_status
 import urllib.parse as urlp
 import json
-from .models import SetlistFMStatus, Artist, Concert
+from .models import SetlistFMStatus, Artist
 from .map_helper import create_graph_code
-from .initial_report import basic_info
-from .stats_config import TOP_SONGS
+from .initial_report import basic_info, songs_by_day, songs_by_month, songs_by_year, set_info
+from .stats_config import TOP_SONGS, NUM_TOP_SET_SONGS, NUM_TOP_SETS, NUM_TOP_ENCORES, NUM_TOP_COVERS
 
 
 def _get_statuses():
@@ -98,10 +98,9 @@ def initial(request, artist):
     context = {}
     context["artist"] = artist
 
-
     num_concerts, total_songs, usual_num_sets, concert_len, avg_covers, all_songs, all_originals, encore_songs,\
         all_covers, total_cover_plays, encore_length, encores, num_solo_encores, num_multiple_encores,\
-        num_covered_plays, covered_artists = basic_info(artist)
+        num_covered_artists, covered_artists, artist_to_songs = basic_info(artist)
 
     context["num_concerts"] = num_concerts
     context["total_songs"] = total_songs
@@ -109,42 +108,36 @@ def initial(request, artist):
     context["avg_covers"] = avg_covers
     context["concert_len"] = concert_len
 
+    set_lengths, num_solo_sets, num_multiple_sets, common_sets, common_set_songs, top_set_days = \
+        set_info(artist, usual_num_sets)
 
-    context["set_lengths"] = None
-    context["num_solo_sets"] = None
-    context["num_multiple_sets"] = None
-    context["common_set_songs"] = None
-    context["uncommon_set_songs"] = None
-    context["common_sets"] = None
-    context["top_set_dates"] = None
-
-
+    context["set_lengths"] = set_lengths
+    context["num_solo_sets"] = num_solo_sets
+    context["num_multiple_sets"] = num_multiple_sets
+    context["common_set_songs"] = [css[:NUM_TOP_SET_SONGS] for css in common_set_songs]
+    context["uncommon_set_songs"] = [list(reversed(css))[:NUM_TOP_SET_SONGS] for css in common_set_songs]
+    context["common_sets"] = [cs[:NUM_TOP_SETS] for cs in common_sets]
+    context["top_set_dates"] = top_set_days
 
     context["encore_length"] = encore_length
     context["num_solo_encores"] = num_solo_encores
     context["num_multiple_encores"] = num_multiple_encores
-    context["common_encores"] = encores
-    context["common_encore_songs"] = encore_songs
+    context["common_encores"] = encores[:NUM_TOP_ENCORES]
+    context["common_encore_songs"] = encore_songs[:NUM_TOP_ENCORES]
     context["top_songs"] = TOP_SONGS
 
-
-
-    context["day_song_zip_info"] = None
-    context["month_song_zip_info"] = None
-    context["year_song_zip_info"] = None
-
+    context["day_song_zip_info"] = songs_by_day(artist)
+    context["month_song_zip_info"] = songs_by_month(artist)
+    context["year_song_zip_info"] = songs_by_year(artist)
 
     context["county_graph"], context["state_graph"], context["country_graph"] = create_graph_code(artist)
-
 
     context["all_songs"] = all_songs
     context["all_originals"] = all_originals
     context["total_cover_plays"] = total_cover_plays
     context["all_covers"] = all_covers
-    context["total_artists_covered"] = num_covered_plays
-    context["all_covered_artists"] = covered_artists
-    context["artist_to_songs"] = None
-
-
+    context["total_artists_covered"] = num_covered_artists
+    context["all_covered_artists"] = covered_artists[:NUM_TOP_COVERS]
+    context["artist_to_songs"] = artist_to_songs
 
     return render(request, 'stats/initial_artist.jinja2', context=context)

@@ -20,7 +20,7 @@
 {% macro songs_by(unit, songs_by_info) -%}
     <h2>Songs by {{ unit }}</h2>
     {% for day, song_list, percent in songs_by_info %}
-      <h3>{{ day }} {{ percent }}</h3>
+      <h3>{{ day }} {{ percent }}%</h3>
       <ol>
         {% for song, num, unique in song_list %}
           {% if unique %}

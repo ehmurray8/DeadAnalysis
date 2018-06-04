@@ -196,11 +196,11 @@ class MusicData(object):
                 if s.is_cover():
                     covers_per_concert += 1
 
-        common_sets = [[] for _ in range(usual_num_sets)]
         num_multiple_encores = 0
         num_solo_encore = 0
         num_multiple_sets = [0 for _ in range(usual_num_sets)]
         num_solo_sets = [0 for _ in range(usual_num_sets)]
+        common_sets = [[] for _ in range(usual_num_sets)]
         common_set_songs = [FrequencyDict() for _ in range(usual_num_sets)]
         for i, s in enumerate(sets):
             common_sets[i] = s.sorted_top_tuples()
@@ -229,6 +229,7 @@ class MusicData(object):
         for i, cs in enumerate(common_sets):
             for c in cs:
                 top_set_dates[i].append([date.strftime("%B %d, %Y") for date in sorted(dates[i][c[0]])])
+
         return set_lengths, round(encore_length, 2), common_sets, common_encores, num_solo_sets,\
                num_multiple_sets, num_solo_encore, num_multiple_encores, common_set_songs_ordered, top_set_dates,\
                round(total_length/len(self.concerts), 2),\

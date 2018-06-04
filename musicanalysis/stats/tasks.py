@@ -38,12 +38,16 @@ def get_song_data(artist):
     total = 2
     i = 1
     artist, status = setup_status(artist)
+    mbid = None
     while i <= total:
         conn = http.client.HTTPSConnection("api.setlist.fm")
         conn.connect()
         logger.info("{} Page {}".format(artist.name, i))
-        conn.request("GET", "/rest/1.0/search/setlists?artistName={}&p={}" .format(urlp.quote_plus(artist.name), i),
-                     headers=HEADERS)
+        if mbid is not None:
+            conn.request("GET", "/rest/1.0/search/setlists?artistName={}&p={}" .format(urlp.quote_plus(artist.name), i),
+                         headers=HEADERS)
+        else:
+            conn.request("GET", "/rest/1.0/{}/setlists".format(mbid))
         res = conn.getresponse()
         data = res.read()
         main_data = json.loads(data.decode("utf-8"))
@@ -52,7 +56,6 @@ def get_song_data(artist):
             status.save()
             artist.delete()
             artist.save()
-            break
         setlists = main_data["setlist"]
         total = float(main_data["total"])
         items = float(main_data["itemsPerPage"])
@@ -61,6 +64,15 @@ def get_song_data(artist):
         status.current_page = i
         status.final_page = total
         status.save()
+
+        if mbid is None:
+            for setlist in setlists:
+                if artist.name.lower() == setlist["artist"]["name"].lower():
+                    mbid = setlist["artist"]["mbid"]
+                    i = 1
+                    total = 2
+            continue
+
         for setlist in setlists:
             venue = setlist["venue"]
             date = setlist["eventDate"]
