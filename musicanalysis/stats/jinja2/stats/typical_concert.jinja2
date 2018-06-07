@@ -7,9 +7,7 @@
 <script src="{{ static('stats/scripts/markerclusterer.js') }}"></script>
 {{ helpers.display_bottom_header("nav-body") }}
 
-<code id="current-artist" style="display: none;">{{ artist }}</code>
-
-{{ stat_helpers.navbar("Initial Page", artist) }}
+{{ stat_helpers.navbar("Typical Concert", artist) }}
 
 <h1>Analysis of {{ artist }}</h1>
 <h2>Typical Concert</h2>
@@ -66,46 +64,4 @@
 <h2>Top {{top_songs}} Songs</h2>
 {{ stat_helpers.display_ordered_list(all_songs[:top_songs]) }}
 
-{{ stat_helpers.songs_by("Day", day_song_zip_info) }}
-{{ stat_helpers.songs_by("Month", month_song_zip_info) }}
-{{ stat_helpers.songs_by("Year", year_song_zip_info) }}
-
-{{ county_graph | safe }}
-<br/>
-{{ state_graph | safe }}
-<br/>
-{{ country_graph | safe }}
-<br/>
-
-{{ stat_helpers.display_ordered_list(all_songs, "All Songs") }}
-<br/>
-{{ stat_helpers.display_ordered_list(all_originals, "All Original Songs") }}
-<br/>
-
-<h2>Total Times Covers Played - {{ total_cover_plays }}</h2>
-{{ stat_helpers.display_ordered_list(all_covers, "All Covered Songs") }}
-
-<h3>All Covered Artists - {{ total_artists_covered }}</h3>
-
-<ol>
-    {% for artist, num in all_covered_artists %}
-        <li>{{ artist }} - {{ num }}
-            <ol>
-            {% for song, num_song in artist_to_songs[artist] %}
-                <li>{{ song }} - {{ num_song }}</li>
-            {% endfor %}
-            </ol>
-        </li>
-    {% endfor %}
-</ol>
-
-<h2>Locations</h2>
-<div id="venue-map" style="width: 500px; height: 400px;"></div>
-
-<h3>Top {{ loc_frequencies|length }} Venues</h3>
-<ol>
-{% for song, num in loc_frequencies %}
-    <li>{{ song }} - {{ num }}</li>
-{% endfor %}
-</ol>
 {{ helpers.display_footer() }}

@@ -1,7 +1,7 @@
 {% import 'main/includes/helpers.jinja2' as helpers %}
 
 {{  helpers.display_header("Music Analysis", [static('main/styles/style.css'), static('stats/styles/style.css')],
-        [static('stats/scripts/stats.js')], [False, True]) }}
+        [static('stats/scripts/stats.js')]) }}
 <h1>Music Stats Overview</h1>
 {% for artist, percent in in_progress_artists|dictsort(by="value")|reverse %}
     <div class='add-musician-progress' id="add-musician-progress-{{ loop.index0 }}">

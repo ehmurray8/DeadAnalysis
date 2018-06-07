@@ -20,16 +20,48 @@
 {% macro songs_by(unit, songs_by_info) -%}
     <h2>Songs by {{ unit }}</h2>
     {% for day, song_list, percent in songs_by_info %}
-      <h3>{{ day }} {{ percent }}%</h3>
-      <ol>
+        <h3>{{ day }} {{ percent }}%</h3>
+        <ol>
         {% for song, num, unique in song_list %}
-          {% if unique %}
-            <li class="unique-song">{{ song }} - {{ num }}</li>
-          {% else %}
-            <li>{{ song }} - {{ num }}</li>
-          {% endif %}
+            {% if unique %}
+                <li class="unique-song">{{ song }} - {{ num }}</li>
+            {% else %}
+                <li>{{ song }} - {{ num }}</li>
+            {% endif %}
         {% endfor %}
-      </ol>
+        </ol>
     {% endfor %}
 {% endmacro -%}
 
+
+{% macro navbar(active, artist) -%}
+    {% set items = [("Artist", url('stats:artist', kwargs={'artist': artist})),
+    ("Typical Concert", url('stats:typical_concert', kwargs={'artist': artist})),
+    ("Locations", url('stats:locations', kwargs={'artist': artist})),
+    ("Songs", url('stats:songs', kwargs={'artist': artist})),
+    ("Songs By", url('stats:songs_by', kwargs={'artist': artist})),
+    ("Covers", url('stats:covers', kwargs={'artist': artist})),
+    ("Tours", url('stats:tours', kwargs={'artist': artist})),
+    ("Venues", url('stats:venues', kwargs={'artist': artist})),
+    ("Initial Page", url('stats:initial', kwargs={'artist': artist}))] %}
+
+    {% set main_items = [("Stats", url('stats:index')), ("Home", url('main:index'))] %}
+
+    <div class="top-nav">
+        {% for name, link in items %}
+            {% if active == name %}
+                <a class="active nav-button">{{ name }}</a>
+            {% else %}
+                <a class="nav-button" href="{{ link }}">{{ name }}</a>
+            {% endif %}
+        {% endfor %}
+        <div style="float: right;" class="drop-down">
+            <a class="drop-btn">Main Menu</a>
+            <div class="drop-content">
+                {% for name, link in main_items %}
+                    <a class="drop-button" href="{{ link }}">{{ name }}</a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+{%- endmacro %}

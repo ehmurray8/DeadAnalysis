@@ -1,0 +1,13 @@
+{% import 'main/includes/helpers.jinja2' as helpers %}
+{% import 'stats/includes/helpers.jinja2' as stat_helpers %}
+
+{{ helpers.display_top_header("Music Analysis", [static('main/styles/style.css'), static('stats/styles/style.css')], []) }}
+{{ helpers.display_bottom_header("nav-body") }}
+
+{{ stat_helpers.navbar("Tours", artist) }}
+
+<h1>Analysis of {{ artist }}</h1>
+
+<h2>Tours</h2>
+
+{{ helpers.display_footer() }}

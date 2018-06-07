@@ -1,4 +1,4 @@
-{% macro display_top_header(title, stylesheets, scripts=[], async=[]) -%}
+{% macro display_top_header(title, stylesheets, scripts) -%}
     <!DOCTYPE html>
     <html>
         <head>
@@ -7,23 +7,23 @@
         {% for link in stylesheets %}
             <link rel="stylesheet" type="text/css" href="{{ link }}?{{ range(1, 1000000000000) | random }}" >
         {% endfor %}
-        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+        <script src="{{ static('/main/scripts/jquery.min.js')}}"></script>
         {% for script in scripts %}
-            {% if async[loop.index0] %}
-                <script src ="{{ script }}?{{ range(1, 1000000000000) | random }}" async></script>
-            {% else %}
-                <script src ="{{ script }}?{{ range(1, 1000000000000) | random }}"></script>
-            {% endif %}
+            <script src ="{{ script }}?{{ range(1, 1000000000000) | random }}" async></script>
         {% endfor %}
 {%- endmacro %}
 
-{% macro display_bottom_header() -%}
+{% macro display_bottom_header(body_class="") -%}
     </head>
-    <body>
+    {% if body_class %}
+        <body class="{{ body_class }}">
+    {% else %}
+        <body>
+    {% endif %}
 {%- endmacro %}
 
-{% macro display_header(title, stylesheets, scripts=[], async=[]) -%}
-    {{  display_top_header(title, stylesheets, scrips, async) }}
+{% macro display_header(title, stylesheets, scripts) -%}
+    {{  display_top_header(title, stylesheets, scripWindowts) }}
     {{  display_bottom_header() }}
 {%- endmacro %}
 
@@ -31,3 +31,4 @@
     </body>
     </html>
 {%- endmacro %}
+

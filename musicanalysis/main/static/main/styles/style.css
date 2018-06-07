@@ -1,3 +1,66 @@
 .unique-song {
     font-weight: bold;
 }
+
+.top-nav {
+    background-color: #333;
+    list-style-type: none;
+    overflow: hidden;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    min-width: 160px;
+    box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+    z-index: 1;
+    margin:  0;
+    padding: 0;
+}
+
+.nav-button {
+    float: left;
+}
+
+.nav-button, .drop-btn {
+    display: block;
+    color: white;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.nav-button:hover, .drop-content a:hover {
+    background-color: #4CAF50;
+}
+
+.active {
+    background-color: dodgerblue;
+}
+
+.drop-content:hover, .drop-down:hover .drop-content {
+    display: block;
+}
+
+.drop-content {
+    display: none;
+}
+
+.drop-down {
+    position: relative;
+    display: inline-block;
+    float: none;
+    overflow: hidden;
+}
+
+.drop-content a {
+    color: white;
+    padding: 14px 16px;
+    text-decoration: none;
+    display: block;
+}
+
+.nav-body {
+    padding-top: 40px;
+    padding-left: 0;
+    margin-left: 0;
+}

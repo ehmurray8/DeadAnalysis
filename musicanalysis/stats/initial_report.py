@@ -104,13 +104,20 @@ def _songs_by(artist, units, queries, query_str, num_songs):
                 if song.song_name not in FILTER_SONGS:
                     frequencies[song.song_name] += 1
         songs_list.append(frequencies.sorted_top_tuples(num_songs))
-        unique_songs = [song for song, num in frequencies.sorted_top_tuples() if num == 1]
-        for i, song_list in enumerate(songs_list):
-            for j, song in enumerate(song_list):
-                if song in unique_songs:
-                    songs_list[i][j] = (songs_list[i][j][0], songs_list[i][j][1], True)
-                else:
-                    songs_list[i][j] = (songs_list[i][j][0], songs_list[i][j][1], False)
+
+    for i, song_list in enumerate(songs_list):
+        unique_songs = []
+        for song in song_list:
+            unique = True
+            for j, song_list1 in enumerate(songs_list):
+                if i != j:
+                    if song[0] in [song1[0] for song1 in song_list1]:
+                        unique = False
+                        break
+            unique_songs.append(unique)
+        for k, unique in enumerate(unique_songs):
+            songs_list[i][k] = (songs_list[i][k][0], songs_list[i][k][1], unique)
+
     indexes = [i for i, song_list in enumerate(songs_list) if len(song_list)]
     units = [unit for i, unit in enumerate(units) if i in indexes]
     songs_list = [song_list for i, song_list in enumerate(songs_list) if i in indexes]

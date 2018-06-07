@@ -80,6 +80,7 @@ def get_song_data(artist):
                     mbid = setlist["artist"]["mbid"]
                     i = 1
                     total = 2
+            i += 1
             continue
 
         for setlist in setlists:
@@ -183,7 +184,9 @@ def get_song_data(artist):
                 artist.save()
         i+=1
         conn.close()
-    status.finished=True
+    status.finished = True
+    if mbid is None:
+        status.exists = False
     status.published = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     status.save()
 

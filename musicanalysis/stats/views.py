@@ -7,7 +7,8 @@ import json
 from .models import SetlistFMStatus, Artist, Venue
 from .map_helper import create_graph_code
 from .initial_report import basic_info, songs_by_day, songs_by_month, songs_by_year, set_info
-from .stats_config import TOP_SONGS, NUM_TOP_SET_SONGS, NUM_TOP_SETS, NUM_TOP_ENCORES, NUM_TOP_COVERS
+from .stats_config import TOP_SONGS, NUM_TOP_SET_SONGS, NUM_TOP_SETS, NUM_TOP_ENCORES, NUM_TOP_COVERS, NUM_TOP_VENUES
+from .frequency import FrequencyDict
 from musicanalysis._keys import GOOGLE_MAPS_KEY
 
 
@@ -89,13 +90,21 @@ def status(request):
     return HttpResponse(json.dumps(context))
 
 
-def venue_locations(request, artist):
+def lat_longs(artist):
     artist_name = urlp.unquote(artist, encoding="utf-8")
-    locations = []
     venues = Venue.objects.filter(concert__artist__name=artist_name).all()
-    for i, venue in enumerate(venues):
-        locations.append([venue.name, venue.latitude, venue.longitude, i])
-    return HttpResponse(json.dumps({"locations": locations}))
+    venue_frequencies = FrequencyDict()
+    for venue in venues:
+        venue_frequencies[venue] += 1
+    return venue_frequencies
+
+
+def venue_locations(request, artist):
+    locs = []
+    venue_frequencies = lat_longs(artist)
+    for i, (venue, num) in enumerate(venue_frequencies):
+        locs.append(["{} - {}".format(venue.name, num), venue.latitude, venue.longitude, i])
+    return HttpResponse(json.dumps({"locations": locs}))
 
 
 def artist(request, artist):
@@ -151,4 +160,95 @@ def initial(request, artist):
     context["all_covered_artists"] = covered_artists[:NUM_TOP_COVERS]
     context["artist_to_songs"] = artist_to_songs
 
+    venue_frequencies = lat_longs(artist)
+    loc_frequencies = [(str(venue), num) for venue, num in venue_frequencies.sorted_top_tuples()]
+    context["loc_frequencies"] = loc_frequencies[:NUM_TOP_VENUES]
+
     return render(request, 'stats/initial_artist.jinja2', context=context)
+
+def typical_concert(request, artist):
+    context = {}
+    context["artist"] = artist
+
+    num_concerts, total_songs, usual_num_sets, concert_len, avg_covers, all_songs, all_originals, encore_songs,\
+        all_covers, total_cover_plays, encore_length, encores, num_solo_encores, num_multiple_encores,\
+        num_covered_artists, covered_artists, artist_to_songs = basic_info(artist)
+
+    context["num_concerts"] = num_concerts
+    context["total_songs"] = total_songs
+    context["num_sets"] = usual_num_sets
+    context["avg_covers"] = avg_covers
+    context["concert_len"] = concert_len
+
+    set_lengths, num_solo_sets, num_multiple_sets, common_sets, common_set_songs, top_set_days = \
+        set_info(artist, usual_num_sets)
+
+    context["set_lengths"] = set_lengths
+    context["num_solo_sets"] = num_solo_sets
+    context["num_multiple_sets"] = num_multiple_sets
+    context["common_set_songs"] = [css[:NUM_TOP_SET_SONGS] for css in common_set_songs]
+    context["uncommon_set_songs"] = [list(reversed(css))[:NUM_TOP_SET_SONGS] for css in common_set_songs]
+    context["common_sets"] = [cs[:NUM_TOP_SETS] for cs in common_sets]
+    context["top_set_dates"] = top_set_days
+
+    context["encore_length"] = encore_length
+    context["num_solo_encores"] = num_solo_encores
+    context["num_multiple_encores"] = num_multiple_encores
+    context["common_encores"] = encores[:NUM_TOP_ENCORES]
+    context["common_encore_songs"] = encore_songs[:NUM_TOP_ENCORES]
+    context["top_songs"] = TOP_SONGS
+    context["all_songs"] = all_songs
+    return render(request, 'stats/typical_concert.jinja2', context=context)
+
+def locations(request, artist):
+    context = {}
+    context["artist"] = artist
+    context["county_graph"], context["state_graph"], context["country_graph"] = create_graph_code(artist)
+    return render(request, 'stats/locations.jinja2', context=context)
+
+def songs(request, artist):
+    context = {}
+    context["artist"] = artist
+    # TODO: Break this into one method
+    num_concerts, total_songs, usual_num_sets, concert_len, avg_covers, all_songs, all_originals, encore_songs,\
+        all_covers, total_cover_plays, encore_length, encores, num_solo_encores, num_multiple_encores,\
+        num_covered_artists, covered_artists, artist_to_songs = basic_info(artist)
+    context["all_songs"] = all_songs
+    context["all_originals"] = all_originals
+    return render(request, 'stats/songs.jinja2', context=context)
+
+def covers(request, artist):
+    context = {}
+    context["artist"] = artist
+    # TODO: Break this into one method
+    num_concerts, total_songs, usual_num_sets, concert_len, avg_covers, all_songs, all_originals, encore_songs,\
+        all_covers, total_cover_plays, encore_length, encores, num_solo_encores, num_multiple_encores,\
+        num_covered_artists, covered_artists, artist_to_songs = basic_info(artist)
+    context["total_cover_plays"] = total_cover_plays
+    context["all_covers"] = all_covers
+    context["total_artists_covered"] = num_covered_artists
+    context["all_covered_artists"] = covered_artists[:NUM_TOP_COVERS]
+    context["artist_to_songs"] = artist_to_songs
+    return render(request, 'stats/covers.jinja2', context=context)
+
+def tours(request, artist):
+    context = {}
+    context["artist"] = artist
+    return render(request, 'stats/tours.jinja2', context=context)
+
+def venues(request, artist):
+    context = {}
+    context["artist"] = artist
+    context["api_key"] = GOOGLE_MAPS_KEY
+    venue_frequencies = lat_longs(artist)
+    loc_frequencies = [(str(venue), num) for venue, num in venue_frequencies.sorted_top_tuples()]
+    context["loc_frequencies"] = loc_frequencies[:NUM_TOP_VENUES]
+    return render(request, 'stats/venues.jinja2', context=context)
+
+def songs_by(request, artist):
+    context = {}
+    context["artist"] = artist
+    context["day_song_zip_info"] = songs_by_day(artist)
+    context["month_song_zip_info"] = songs_by_month(artist)
+    context["year_song_zip_info"] = songs_by_year(artist)
+    return render(request, 'stats/songs_by.jinja2', context=context)
