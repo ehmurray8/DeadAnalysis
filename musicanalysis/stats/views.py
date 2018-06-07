@@ -15,7 +15,7 @@ from musicanalysis._keys import GOOGLE_MAPS_KEY
 def _get_statuses():
     statuses = {}
     try:
-        for _status in SetlistFMStatus.objects.filter(finished=False):
+        for _status in SetlistFMStatus.objects.filter(finished=False).all():
             try:
                 percent = int(float(_status.current_page/_status.final_page) * 100)
             except (ValueError, ZeroDivisionError):

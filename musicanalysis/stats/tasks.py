@@ -75,12 +75,13 @@ def get_song_data(artist):
         status.save()
 
         if mbid is None:
+            i += 1
             for setlist in setlists:
                 if artist.name.lower() == setlist["artist"]["name"].lower():
                     mbid = setlist["artist"]["mbid"]
                     i = 1
                     total = 2
-            i += 1
+                    break
             continue
 
         for setlist in setlists:
