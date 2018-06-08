@@ -3,13 +3,11 @@
 
 {{ helpers.display_top_header("Music Analysis", [static('main/styles/style.css'), static('stats/styles/style.css')], []) }}
 {{ helpers.display_bottom_header("nav-body") }}
-
 {{ stat_helpers.navbar("Songs By", artist) }}
 
-<h1>Analysis of {{ artist }}</h1>
-
-{{ stat_helpers.songs_by("Day", day_song_zip_info) }}
-{{ stat_helpers.songs_by("Month", month_song_zip_info) }}
-{{ stat_helpers.songs_by("Year", year_song_zip_info) }}
-
+<div class="main-content">
+    {{ stat_helpers.songs_by("Day", day_song_zip_info) }}
+    {{ stat_helpers.songs_by("Month", month_song_zip_info) }}
+    {{ stat_helpers.songs_by("Year", year_song_zip_info) }}
+</div>
 {{ helpers.display_footer() }}

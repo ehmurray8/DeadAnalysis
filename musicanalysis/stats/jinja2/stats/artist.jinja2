@@ -4,10 +4,9 @@
 
 {{ helpers.display_top_header(artist + " Analysis", [static('main/styles/style.css'), static('stats/styles/style.css')]) }}
 {{ helpers.display_bottom_header("nav-body") }}
+{{ stats_helpers.navbar(artist, artist) }}
 
-{{ stats_helpers.navbar("Artist", artist) }}
-
-<h1>{{ artist }}</h1>
-
-
+<div class="main-content">
+    <h1>{{ artist }}</h1>
+</div>
 {{  helpers.display_footer() }}

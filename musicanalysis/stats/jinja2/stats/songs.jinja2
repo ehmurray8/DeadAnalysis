@@ -3,14 +3,10 @@
 
 {{ helpers.display_top_header("Music Analysis", [static('main/styles/style.css'), static('stats/styles/style.css')], []) }}
 {{ helpers.display_bottom_header("nav-body") }}
-
 {{ stat_helpers.navbar("Songs", artist) }}
 
-<h1>Analysis of {{ artist }}</h1>
-
-{{ stat_helpers.display_ordered_list(all_songs, "All Songs") }}
-<br/>
-{{ stat_helpers.display_ordered_list(all_originals, "All Original Songs") }}
-<br/>
-
+<div class="main-content">
+    {{ stat_helpers.display_ordered_list(all_songs, "All Songs") }}
+    {{ stat_helpers.display_ordered_list(all_originals, "All Original Songs") }}
+</div>
 {{ helpers.display_footer() }}

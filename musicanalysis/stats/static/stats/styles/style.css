@@ -2,13 +2,23 @@
     width: 1%;
     height: 30px;
     background-color: #4CAF50;
-    text-align: center; /* To center it horizontally (if you want) */
-    line-height: 30px; /* To center it vertically */
+    text-align: center;
+    line-height: 30px;
     color: white;
 }
 
 .add-musician-progress {
     width: 100%;
-    background-color: #ddd;
+    background-color: #7F7F7F;
+    margin-right: 20px;
 }
 
+.unique-song {
+    font-weight: bold;
+}
+
+.search-bar {
+    margin: 25px 0 5px;
+    width: 250px;
+    align-content: center;
+}

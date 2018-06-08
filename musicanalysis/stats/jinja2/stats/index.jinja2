@@ -1,33 +1,33 @@
 {% import 'main/includes/helpers.jinja2' as helpers %}
 
-{{  helpers.display_header("Music Analysis", [static('main/styles/style.css'), static('stats/styles/style.css')],
+{{ helpers.display_top_header("Music Analysis", [static('main/styles/style.css'), static('stats/styles/style.css')],
         [static('stats/scripts/stats.js')]) }}
-<h1>Music Stats Overview</h1>
-{% for artist, percent in in_progress_artists|dictsort(by="value")|reverse %}
-    <div class='add-musician-progress' id="add-musician-progress-{{ loop.index0 }}">
-        <h3>{{ artist }}</h3>
-        <div class='add-musician-bar' id="add-musician-bar-{{ loop.index0 }}" style="width: {{ percent }}%">{{ percent }}%</div>
-        <a href="{{ url('stats:artist', kwargs={'artist':artist}) }}" id="musician-button-{{ loop.index0 }}" style="display: none;">{{ artist }}</a>
+{{ helpers.display_bottom_header("nav-body") }}
+{{ helpers.navbar('Stats') }}
+
+<div class="main-content">
+    <h1 class="header-break">Music Stats Overview</h1>
+    {% for artist, percent in in_progress_artists|dictsort(by="value")|reverse %}
+        <div class='add-musician-progress' id="add-musician-progress-{{ loop.index0 }}">
+            <h3>{{ artist }}</h3>
+            <div class='add-musician-bar' id="add-musician-bar-{{ loop.index0 }}" style="width: {{ percent }}%">{{ percent }}%</div>
+            <a href="{{ url('stats:artist', kwargs={'artist':artist}) }}" id="musician-button-{{ loop.index0 }}" style="display: none;">{{ artist }}</a>
+        </div>
+    {% endfor %}
+    <form>
+        <input class="search-bar" title="Find Musician" type="search" name="search-musician" value="">
+        <input type="submit" value="Search">
+    </form>
+    <br/>
+    {% if search_status %}
+        {{ search_status }}
+    {% endif %}
+    <h1>Artists</h1>
+    <div>
+    {% for artist in artists|sort %}
+        <a href="{{ url('stats:artist', kwargs={'artist':artist}) }}">{{ artist }}</a>
+        <br/>
+    {% endfor %}
     </div>
-    <br/>
-{% endfor %}
-<br/>
-<form>
-    <input title="Find Musician" type="search" name="search-musician" value="">
-    <input type="submit" value="Search">
-</form>
-<br/>
-{% if search_status %}
-    {{ search_status }}
-{% endif %}
-<br/>
-<h2>Artists</h2>
-<div>
-{% for artist in artists|sort %}
-    <a href="{{ url('stats:artist', kwargs={'artist':artist}) }}">{{ artist }}</a>
-    <br/>
-{% endfor %}
 </div>
-<br/>
-<a href="{{ url('main:index') }}">Home</a>
 {{  helpers.display_footer() }}

@@ -1,8 +1,15 @@
-.unique-song {
-    font-weight: bold;
+
+.main-content {
+    margin-left: 20px;
+    margin-right: 20px;
+}
+
+.header-break {
+    margin-bottom: 25px;
 }
 
 .top-nav {
+    color: #F4FAFF;
     background-color: #333;
     list-style-type: none;
     overflow: hidden;
@@ -22,7 +29,7 @@
 
 .nav-button, .drop-btn {
     display: block;
-    color: white;
+    color: #F4FAFF;
     text-align: center;
     padding: 14px 16px;
     text-decoration: none;
@@ -30,11 +37,15 @@
 }
 
 .nav-button:hover, .drop-content a:hover {
-    background-color: #4CAF50;
+    background-color: #7F7F7F;
+    text-decoration: none;
+    color: #F4FAFF;
 }
 
 .active {
-    background-color: dodgerblue;
+    background-color: #A1D2CE;
+    color: #333 !important;
+    font-weight: bold;
 }
 
 .drop-content:hover, .drop-down:hover .drop-content {
@@ -53,7 +64,7 @@
 }
 
 .drop-content a {
-    color: white;
+    color: #F4FAFF;
     padding: 14px 16px;
     text-decoration: none;
     display: block;
@@ -63,9 +74,12 @@
     padding-top: 60px;
     padding-left: 0;
     margin-left: 0;
+    background-color: #CECECE;
+    color: black;
 }
+
 @media (max-width: 979px) {
-  .nav-body {
-      padding-top: 0;
-  }
+    .nav-body {
+        padding-top: 0;
+    }
 }

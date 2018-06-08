@@ -3,18 +3,15 @@
 
 {{ helpers.display_top_header("Music Analysis", [static('main/styles/style.css'), static('stats/styles/style.css')], []) }}
 {{ helpers.display_bottom_header("nav-body") }}
-
 {{ stat_helpers.navbar("Locations", artist) }}
 
-<h1>Analysis of {{ artist }}</h1>
-
-<h2>Concert Maps</h2>
-
-{{ county_graph | safe }}
-<br/>
-{{ state_graph | safe }}
-<br/>
-{{ country_graph | safe }}
-<br/>
-
+<div class="main-content">
+    <h1>Concert Maps</h1>
+    {{ county_graph | safe }}
+    <br/>
+    {{ state_graph | safe }}
+    <br/>
+    {{ country_graph | safe }}
+    <br/>
+</div>
 {{ helpers.display_footer() }}

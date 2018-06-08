@@ -6,19 +6,19 @@
 <script src="{{  static('stats/scripts/venues.js') }}?{{ range(1, 1000000000000) | random }}" type="text/javascript" defer></script>
 <script src="{{ static('stats/scripts/markerclusterer.js') }}"></script>
 {{ helpers.display_bottom_header("nav-body") }}
-
 <code id="current-artist" style="display: none;">{{ artist }}</code>
+
 {{ stat_helpers.navbar("Venues", artist) }}
-<h1>Analysis of {{ artist }}</h1>
+<div class="main-content">
+    <h1>Venues</h1>
+    <div id="venue-map" style="width: 500px; height: 400px;"></div>
 
-<h2>Locations</h2>
-<div id="venue-map" style="width: 500px; height: 400px;"></div>
-
-<h3>Top {{ loc_frequencies|length }} Venues</h3>
-<ol>
-{% for song, num in loc_frequencies %}
-    <li>{{ song }} - {{ num }}</li>
-{% endfor %}
-</ol>
-
+    <br/>
+    <h2>Top {{ loc_frequencies|length }} Venues</h2>
+    <ol>
+    {% for song, num in loc_frequencies %}
+        <li>{{ song }} - {{ num }}</li>
+    {% endfor %}
+    </ol>
+</div>
 {{ helpers.display_footer() }}

@@ -20,7 +20,7 @@
 {% macro songs_by(unit, songs_by_info) -%}
     <h2>Songs by {{ unit }}</h2>
     {% for day, song_list, percent in songs_by_info %}
-        <h3>{{ day }} {{ percent }}%</h3>
+        <h4>{{ day }} {{ percent }}%</h4>
         <ol>
         {% for song, num, unique in song_list %}
             {% if unique %}
@@ -35,7 +35,7 @@
 
 
 {% macro navbar(active, artist) -%}
-    {% set items = [("Artist", url('stats:artist', kwargs={'artist': artist})),
+    {% set items = [(artist, url('stats:artist', kwargs={'artist': artist})),
     ("Typical Concert", url('stats:typical_concert', kwargs={'artist': artist})),
     ("Locations", url('stats:locations', kwargs={'artist': artist})),
     ("Songs", url('stats:songs', kwargs={'artist': artist})),
@@ -59,7 +59,7 @@
             <a class="drop-btn">Main Menu</a>
             <div class="drop-content">
                 {% for name, link in main_items %}
-                    <a class="drop-button" href="{{ link }}">{{ name }}</a>
+                    <a href="{{ link }}">{{ name }}</a>
                 {% endfor %}
             </div>
         </div>

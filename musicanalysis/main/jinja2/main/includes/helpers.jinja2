@@ -8,10 +8,10 @@
         {% for link in stylesheets %}
             <link rel="stylesheet" type="text/css" href="{{ link }}?{{ range(1, 1000000000000) | random }}" >
         {% endfor %}
-        {#<link rel="stylesheet" href="{{ static('/main/scripts/bootstrap.min.css') }}" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">#}
+        <link rel="stylesheet" href="{{ static('/main/styles/bootstrap.min.css') }}" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
         <script src="{{ static('/main/scripts/jquery.min.js')}}"></script>
         <script src="{{ static('/main/scripts/popper.min.js')}}" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
-        {#<script src="{{ static('main/scripts/bootstrap.min.js')}}" integrity="sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T" crossorigin="anonymous"></script>#}
+        <script src="{{ static('/main/scripts/bootstrap.min.js')}}" integrity="sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T" crossorigin="anonymous"></script>
         {% for script in scripts %}
             <script src ="{{ script }}?{{ range(1, 1000000000000) | random }}" async></script>
         {% endfor %}
@@ -36,3 +36,16 @@
     </html>
 {%- endmacro %}
 
+{% macro navbar(active) -%}
+    {% set items = [("Home", url('main:index')), ("Stats", url('stats:index'))] %}
+
+    <div class="top-nav">
+        {% for name, link in items %}
+            {% if active == name %}
+                <a class="active nav-button">{{ name }}</a>
+            {% else %}
+                <a class="nav-button" href="{{ link }}">{{ name }}</a>
+            {% endif %}
+        {% endfor %}
+    </div>
+{%- endmacro %}

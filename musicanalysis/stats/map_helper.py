@@ -41,7 +41,9 @@ def create_graph_code(artist: str):
     fig = ff.create_choropleth(fips=list(frequencies.keys()), values=list(frequencies.values()),
                                binning_endpoints=bins,
                                show_state_data=True, show_hover=True, centroid_marker={'opacity': 0}, asp=2.9,
-                               title='{} Concerts by Location'.format(artist), legend_title='Number of Concerts')
+                               title='{} Concerts by Location'.format(artist), legend_title='Number of Concerts',
+                               state_outline={'color': 'rgb(0,0,0)', 'width': 0.5})
+
     plot_county = offline.plot(fig, filename=os.path.join('{} Shows by County.html'.format(artist)),
                                auto_open=False, show_link=False, config={'displayModeBar': False})
     plot_county_code = get_plot(plot_county)
@@ -54,7 +56,8 @@ def create_graph_code(artist: str):
     layout = dict(title='{} Concerts by State'.format(artist), xaxis=dict(fixedrange=True),
                   yaxis=dict(autorange='reversed', fixedrange=True),
                   geo=dict(scope='usa', projection=dict(type='albers usa'), showlakes=True,
-                           lakecolor='rgb(255, 255, 255)'), width=1200, height=800)
+                  lakecolor='rgb(255, 255, 255)'), width=1200, height=800, dragmode='select', paper_bgcolor='rgba(0,0,0,0)',
+                  plot_bgcolor='rgba(0,0,0,0)')
     fig = dict(data=data, layout=layout)
     plot_state = offline.plot(fig, filename=os.path.join('{} Shows by State.html'.format(artist)),
                               auto_open=False, show_link=False, config={'displayModeBar': False})
@@ -70,7 +73,8 @@ def create_graph_code(artist: str):
 
     layout = dict(title='{} Shows by Country'.format(artist), geo=dict(showframe=True, showcoastlines=True,
                   xaxis=dict(fixedrange=True), yaxis=dict(fixedrange=True), dragmode=False,
-                  projection=dict(type='Mercator')), width=1200, height=800)
+                  projection=dict(type='Mercator')), width=1200, height=800, paper_bgcolor='rgba(0,0,0,0)',
+                  plot_bgcolor='rgba(0,0,0,0)', dragmode='select')
     fig = dict(data=data, layout=layout)
     plot_world = offline.plot(fig, validate=False, filename=os.path.join('{} Shows World.html'.format(artist)),
                               auto_open=False, show_link=False, config={'displayModeBar': False, 'scrollZoom': True,

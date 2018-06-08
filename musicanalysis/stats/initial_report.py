@@ -20,10 +20,14 @@ def basic_info(artist):
     encore_length = []
     total_cover_plays = 0
     num_covered_plays = 0
+    num_no_encores = 0
     for concert in concerts:
         total_songs += concert.encores.count()
         encore_length.append(concert.encores.count())
-        encores[" > ".join([song.song_name for song in concert.encores.all()])] += 1
+        if concert.encores.count():
+            encores[" > ".join([song.song_name for song in concert.encores.all()])] += 1
+        else:
+            num_no_encores += 1
         for es in concert.encores.all():
             if es.orig_artist.name != artist:
                 num_covers += 1
@@ -69,7 +73,7 @@ def basic_info(artist):
         artist_to_songs[artist] = list(reversed(sorted(song_freqs, key=lambda x: x[1])))
     return num_concerts, total_songs, usual_num_sets, concert_len, avg_covers, songs, originals, encores_songs,\
            all_covers, total_cover_plays, avg_encore_length, encores, num_solo_encores, num_multiple_encores,\
-           num_covered_artists, covered_artists.sorted_top_tuples(), artist_to_songs
+           num_covered_artists, covered_artists.sorted_top_tuples(), artist_to_songs, num_no_encores
 
 
 def songs_by_day(artist):

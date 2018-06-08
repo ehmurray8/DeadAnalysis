@@ -6,6 +6,7 @@ from django.conf import settings
 from .models import Song, Set, Concert, Venue, Tour, Artist, SetlistFMStatus
 from musicanalysis.celery import app
 import logging
+import socket
 
 logger = logging.getLogger(__name__)
 
@@ -46,17 +47,23 @@ def get_song_data(artist):
     artist, status = setup_status(artist)
     mbid = None
     while i <= total:
-        conn = http.client.HTTPSConnection("api.setlist.fm")
-        conn.connect()
-        logger.info("{} Page {}".format(artist.name, i))
-        if mbid is None:
-            conn.request("GET", "/rest/1.0/search/setlists?artistName={}&p={}" .format(urlp.quote_plus(artist.name), i),
-                         headers=HEADERS)
-        else:
-            conn.request("GET", "/rest/1.0/artist/{}/setlists?p={}".format(mbid, i), headers=HEADERS)
-        res = conn.getresponse()
-        data = res.read()
-        main_data = json.loads(data.decode("utf-8"))
+        response = ""
+        while not response:
+            try:
+                conn = http.client.HTTPSConnection("api.setlist.fm")
+                conn.connect()
+                logger.info("{} Page {}".format(artist.name, i))
+                if mbid is None:
+                    conn.request("GET", "/rest/1.0/search/setlists?artistName={}&p={}".format(urlp.quote_plus(artist.name), i),
+                                 headers=HEADERS)
+                else:
+                    conn.request("GET", "/rest/1.0/artist/{}/setlists?p={}".format(mbid, i), headers=HEADERS)
+                response = conn.getresponse().read()
+                conn.close()
+            except (TimeoutError, socket.gaierror):
+                pass
+
+        main_data = json.loads(response.decode("utf-8"))
         if "code" in main_data and int(main_data["code"]) == 404:
             status.exists = False
             status.save()
@@ -132,10 +139,10 @@ def get_song_data(artist):
                         orig_artist = Artist(name=orig_artist)
                         orig_artist.save()
                     try:
-                        song = Song.objects.filter(orig_artist=orig_artist).get(song_name=song["name"])
+                        song = Song.objects.filter(orig_artist=orig_artist).get(song_name=song["name"].strip())
                     except Song.DoesNotExist:
-                        if song["name"] and song["name"] != " ":
-                            song = Song(song_name=song["name"])
+                        if song["name"].strip():
+                            song = Song(song_name=song["name"].strip())
                             song.save()
                             orig_artist.song_set.add(song)
                             orig_artist.save()
@@ -184,7 +191,6 @@ def get_song_data(artist):
                 venue.save()
                 artist.save()
         i+=1
-        conn.close()
     status.finished = True
     if mbid is None:
         status.exists = False
@@ -193,18 +199,23 @@ def get_song_data(artist):
 
 
 def get_fips(coords) -> str:
-    census_conn = http.client.HTTPSConnection("geo.fcc.gov")
-    census_conn.connect()
+    response = ""
+    while not response:
+        try:
+            census_conn = http.client.HTTPSConnection("geo.fcc.gov")
+            census_conn.connect()
+            census_conn.request("GET", "/api/census/area?lat={}&lon={}&format=json".format(coords["lat"], coords["long"]))
+            response = census_conn.getresponse().read()
+            census_conn.close()
+        except (TimeoutError, socket.gaierror):
+            pass
+
     try:
-        census_conn.request("GET", "/api/census/area?lat={}&lon={}&format=json".format(coords["lat"], coords["long"]))
-        response = census_conn.getresponse().read()
         response_json = json.loads(response.decode("utf-8"))
         try:
             fips = response_json["results"][0]["county_fips"]
         except (IndexError, AttributeError):  # Non-US Concert
             fips = "NA"
-        census_conn.close()
         return fips
     except KeyError:
-        census_conn.close()
         return "NA"

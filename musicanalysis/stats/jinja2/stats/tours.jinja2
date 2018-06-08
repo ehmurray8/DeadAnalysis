@@ -3,11 +3,9 @@
 
 {{ helpers.display_top_header("Music Analysis", [static('main/styles/style.css'), static('stats/styles/style.css')], []) }}
 {{ helpers.display_bottom_header("nav-body") }}
-
 {{ stat_helpers.navbar("Tours", artist) }}
 
-<h1>Analysis of {{ artist }}</h1>
-
-<h2>Tours</h2>
-
+<div class="main-content">
+    <h1>Tours</h1>
+</div>
 {{ helpers.display_footer() }}

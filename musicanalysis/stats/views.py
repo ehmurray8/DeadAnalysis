@@ -120,7 +120,7 @@ def initial(request, artist):
 
     num_concerts, total_songs, usual_num_sets, concert_len, avg_covers, all_songs, all_originals, encore_songs,\
         all_covers, total_cover_plays, encore_length, encores, num_solo_encores, num_multiple_encores,\
-        num_covered_artists, covered_artists, artist_to_songs = basic_info(artist)
+        num_covered_artists, covered_artists, artist_to_songs, num_no_encores = basic_info(artist)
 
     context["num_concerts"] = num_concerts
     context["total_songs"] = total_songs
@@ -144,6 +144,7 @@ def initial(request, artist):
     context["num_multiple_encores"] = num_multiple_encores
     context["common_encores"] = encores[:NUM_TOP_ENCORES]
     context["common_encore_songs"] = encore_songs[:NUM_TOP_ENCORES]
+    context["num_no_encores"] = num_no_encores
     context["top_songs"] = TOP_SONGS
 
     context["day_song_zip_info"] = songs_by_day(artist)
@@ -172,7 +173,7 @@ def typical_concert(request, artist):
 
     num_concerts, total_songs, usual_num_sets, concert_len, avg_covers, all_songs, all_originals, encore_songs,\
         all_covers, total_cover_plays, encore_length, encores, num_solo_encores, num_multiple_encores,\
-        num_covered_artists, covered_artists, artist_to_songs = basic_info(artist)
+        num_covered_artists, covered_artists, artist_to_songs, num_no_encores = basic_info(artist)
 
     context["num_concerts"] = num_concerts
     context["total_songs"] = total_songs
@@ -196,8 +197,10 @@ def typical_concert(request, artist):
     context["num_multiple_encores"] = num_multiple_encores
     context["common_encores"] = encores[:NUM_TOP_ENCORES]
     context["common_encore_songs"] = encore_songs[:NUM_TOP_ENCORES]
+    context["num_no_encores"] = num_no_encores
     context["top_songs"] = TOP_SONGS
     context["all_songs"] = all_songs
+
     return render(request, 'stats/typical_concert.jinja2', context=context)
 
 def locations(request, artist):
@@ -212,7 +215,7 @@ def songs(request, artist):
     # TODO: Break this into one method
     num_concerts, total_songs, usual_num_sets, concert_len, avg_covers, all_songs, all_originals, encore_songs,\
         all_covers, total_cover_plays, encore_length, encores, num_solo_encores, num_multiple_encores,\
-        num_covered_artists, covered_artists, artist_to_songs = basic_info(artist)
+        num_covered_artists, covered_artists, artist_to_songs, num_no_encores = basic_info(artist)
     context["all_songs"] = all_songs
     context["all_originals"] = all_originals
     return render(request, 'stats/songs.jinja2', context=context)
@@ -223,7 +226,7 @@ def covers(request, artist):
     # TODO: Break this into one method
     num_concerts, total_songs, usual_num_sets, concert_len, avg_covers, all_songs, all_originals, encore_songs,\
         all_covers, total_cover_plays, encore_length, encores, num_solo_encores, num_multiple_encores,\
-        num_covered_artists, covered_artists, artist_to_songs = basic_info(artist)
+        num_covered_artists, covered_artists, artist_to_songs, num_no_encores = basic_info(artist)
     context["total_cover_plays"] = total_cover_plays
     context["all_covers"] = all_covers
     context["total_artists_covered"] = num_covered_artists
