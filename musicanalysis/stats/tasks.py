@@ -77,19 +77,21 @@ def get_song_data(artist):
         items = float(main_data["itemsPerPage"])
         total /= items
         total = int(total + .5)
-        status.current_page = i
-        status.final_page = total
-        status.save()
-
         if mbid is None:
             i += 1
             for setlist in setlists:
                 if artist.name.lower() == setlist["artist"]["name"].lower():
                     mbid = setlist["artist"]["mbid"]
+                    artist.mbid = mbid
+                    artist.save()
                     i = 1
                     total = 2
                     break
             continue
+        else:
+            status.current_page = i
+            status.final_page = total
+            status.save()
 
         for setlist in setlists:
             venue = setlist["venue"]

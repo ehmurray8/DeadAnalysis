@@ -6,7 +6,7 @@
 {{ helpers.navbar('Stats') }}
 
 <div class="main-content">
-    <h1 class="header-break">Music Stats Overview</h1>
+    <h1 class="break">Music Stats Overview</h1>
     {% for artist, percent in in_progress_artists|dictsort(by="value")|reverse %}
         <div class='add-musician-progress' id="add-musician-progress-{{ loop.index0 }}">
             <h3>{{ artist }}</h3>

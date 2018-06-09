@@ -8,6 +8,7 @@
         {% for link in stylesheets %}
             <link rel="stylesheet" type="text/css" href="{{ link }}?{{ range(1, 1000000000000) | random }}" >
         {% endfor %}
+        <link rel="shortcut icon" href="{{ static('/main/images/syf.ico') }}" />
         <link rel="stylesheet" href="{{ static('/main/styles/bootstrap.min.css') }}" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
         <script src="{{ static('/main/scripts/jquery.min.js')}}"></script>
         <script src="{{ static('/main/scripts/popper.min.js')}}" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>

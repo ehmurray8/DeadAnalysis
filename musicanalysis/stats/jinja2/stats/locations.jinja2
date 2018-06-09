@@ -7,11 +7,11 @@
 
 <div class="main-content">
     <h1>Concert Maps</h1>
+    <h2 class="header-center break">Concerts by U.S. County</h2>
     {{ county_graph | safe }}
-    <br/>
+    <h2 class="header-center">Concerts by U.S. State</h2>
     {{ state_graph | safe }}
-    <br/>
+    <h2 class="header-center">Concerts by Country</h2>
     {{ country_graph | safe }}
-    <br/>
 </div>
 {{ helpers.display_footer() }}

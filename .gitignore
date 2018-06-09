@@ -6,6 +6,9 @@ __pycache__/
 # Setlist.fm API Key
 api_key.py
 
+# Spotify credentials
+.cache-*
+
 # C extensions
 *.so
 
