@@ -9,6 +9,7 @@ import os
 from .models import Concert
 
 
+
 def get_plot(path: str, margin_bottom: int=0):
     plot = path[7:]
     root = html.parse(plot).getroot()

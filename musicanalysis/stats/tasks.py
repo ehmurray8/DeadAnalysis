@@ -7,6 +7,8 @@ from .models import Song, Set, Concert, Venue, Tour, Artist, SetlistFMStatus
 from musicanalysis.celery import app
 import logging
 import socket
+import musicbrainzngs as mb
+from musicanalysis._keys import MB_UNAME, MB_PASSWORD
 
 logger = logging.getLogger(__name__)
 
@@ -20,12 +22,12 @@ HEADERS = {
 def setup_status(artist):
     artist_name = urlp.unquote(artist, encoding="utf-8")
     try:
-        artist_obj = Artist.objects.get(name=artist_name)
+        artist_obj = Artist.objects.get(name__iexact=artist_name)
     except Artist.DoesNotExist:
         artist_obj = Artist(name=artist_name)
         artist_obj.save()
     try:
-        status = SetlistFMStatus.objects.get(artist__name=artist_obj.name)
+        status = SetlistFMStatus.objects.get(artist__name__iexact=artist_obj.name)
         status.finished = False
         status.published = None
         status.started = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -113,7 +115,7 @@ def get_song_data(artist):
             country = city["country"]
             venue_exists = True
             try:
-                venue = Venue.objects.get(name=venue_name)
+                venue = Venue.objects.get(name__iexact=venue_name)
             except Venue.DoesNotExist:
                 venue_exists = False
 
@@ -136,7 +138,7 @@ def get_song_data(artist):
                     else:
                         orig_artist = artist.name
                     try:
-                        orig_artist = Artist.objects.get(name=orig_artist)
+                        orig_artist = Artist.objects.get(name__iexact=orig_artist)
                     except Artist.DoesNotExist:
                         orig_artist = Artist(name=orig_artist)
                         orig_artist.save()

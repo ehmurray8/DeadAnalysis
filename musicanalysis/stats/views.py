@@ -9,7 +9,8 @@ from .map_helper import create_graph_code
 from .initial_report import basic_info, songs_by_day, songs_by_month, songs_by_year, set_info
 from .stats_config import TOP_SONGS, NUM_TOP_SET_SONGS, NUM_TOP_SETS, NUM_TOP_ENCORES, NUM_TOP_COVERS, NUM_TOP_VENUES
 from .frequency import FrequencyDict
-from musicanalysis._keys import GOOGLE_MAPS_KEY
+from musicanalysis._keys import GOOGLE_MAPS_KEY, MB_UNAME, MB_PASSWORD
+import musicbrainzngs as mb
 
 
 def _get_statuses():
@@ -37,12 +38,12 @@ def index(request):
         context["search_status"] = ", ".join([str(msg) for msg in msgs])
 
     context["artists"] = [artist.name for artist in Artist.objects.all() if len(artist.concert_set.all())
-                          and SetlistFMStatus.objects.filter(artist__name=artist.name, finished=True).exists()]
+                          and SetlistFMStatus.objects.filter(artist__name__iexact=artist.name, finished=True).exists()]
     context["in_progress_artists"] = _get_statuses()
     if search_musician:
         search_musician = urlp.unquote(search_musician, encoding="utf-8")
         try:
-            setlist_query = SetlistFMStatus.objects.get(exists=False, artist__name=search_musician)
+            setlist_query = SetlistFMStatus.objects.get(exists=False, artist__name__iexact=search_musician)
             setlist_query.alerted = True
             setlist_query.save()
             ss = "No data for {} on setlist.fm.".format(search_musician)
@@ -52,14 +53,14 @@ def index(request):
             pass
 
         if Artist.objects.filter(name=search_musician).exists and \
-                SetlistFMStatus.objects.filter(artist__name=search_musician, finished=True).exists():
+                SetlistFMStatus.objects.filter(artist__name__iexact=search_musician, finished=True).exists():
             return redirect('stats:artist', artist=search_musician)
-        elif SetlistFMStatus.objects.filter(finished=False, exists=True, artist__name=search_musician).exists():
+        elif SetlistFMStatus.objects.filter(finished=False, exists=True, artist__name__iexact=search_musician).exists():
             ss = "Downloading setlist.fm data in progress, for {}.".format(search_musician)
             messages.add_message(request, messages.INFO, ss)
             return redirect("stats:index")
         else:
-            a, s = setup_status(search_musician)
+            _, __ = setup_status(search_musician)
             context["in_progress_artists"] = _get_statuses()
             get_song_data.delay(search_musician)
             ss = "Unable to find {}, attempting to download artist information from setlist.fm.".format(search_musician)
@@ -92,7 +93,7 @@ def status(request):
 
 def lat_longs(artist):
     artist_name = urlp.unquote(artist, encoding="utf-8")
-    venues = Venue.objects.filter(concert__artist__name=artist_name).all()
+    venues = Venue.objects.filter(concert__artist__name__iexact=artist_name).all()
     venue_frequencies = FrequencyDict()
     for venue in venues:
         venue_frequencies[venue] += 1
@@ -255,3 +256,13 @@ def songs_by(request, artist):
     context["month_song_zip_info"] = songs_by_month(artist)
     context["year_song_zip_info"] = songs_by_year(artist)
     return render(request, 'stats/songs_by.jinja2', context=context)
+
+def download_artist(request):
+    search_musician = request.GET.get('search-musician', '')
+    mb.auth(MB_UNAME, MB_PASSWORD)
+    if search_musician:
+        artists = mb.search_artists(search_musician)
+        disp_artists = []
+        for artist in artists["artist-list"]:
+            name = artist["name"]
+            _type = artist["type"]

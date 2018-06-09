@@ -3,8 +3,8 @@ from django.db import models
 
 # Create your models here.
 class Artist(models.Model):
-    name = models.CharField(max_length=200)
-    mbid = models.CharField(max_length=200, null=True)
+    name = models.CharField(max_length=200, db_index=True)
+    mbid = models.CharField(max_length=200, null=True, db_index=True)
 
     def __str__(self):
         return self.name
@@ -40,7 +40,7 @@ class Set(models.Model):
 
 
 class Venue(models.Model):
-    name = models.CharField(max_length=200, unique=True)
+    name = models.CharField(max_length=200, unique=True, db_index=True)
     city = models.CharField(max_length=200, null=True)
     state = models.CharField(max_length=200, null=True)
     state_code = models.CharField(max_length=25, null=True)
@@ -59,7 +59,7 @@ class Venue(models.Model):
 
 
 class Tour(models.Model):
-    tour_name = models.CharField(max_length=200)
+    tour_name = models.CharField(max_length=200, db_index=True)
 
     def __str__(self):
         return self.tour_name
@@ -75,3 +75,4 @@ class Concert(models.Model):
 
     def __str__(self):
         return "{} Show".format(self.date)
+

@@ -65,3 +65,15 @@
         </div>
     </div>
 {%- endmacro %}
+
+
+{% macro artistdiv(name, type, country, flag_url, begin_area, begin, end, redirect)  -%}
+    <a href="{{ redirect }}">
+        <div class="artist-div">
+            <h3 class="artist-name">{{ name }}</h3>
+            <p>{{ group }} {% if begin_area %} {{ begin_area }} {% endif %} {{ begin }} - {% if end %} {{ end }} {% endif %}</p>
+            <img class="country-flag" src="{{ flag_url }}" alt="{{ country }} Flag"/>
+            <p>{{ country }}</p>
+        </div>
+    </a>
+{%- endmacro %}
