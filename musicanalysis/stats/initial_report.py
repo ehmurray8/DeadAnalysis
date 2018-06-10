@@ -2,12 +2,28 @@ from .models import Concert
 from .frequency import FrequencyDict
 from collections import defaultdict
 from .stats_config import TOP_SONGS_BY_DAY, TOP_SONGS_BY_MONTH, TOP_SONGS_BY_YEAR, FILTER_SONGS
+from django.db.models import Count, Avg, Q
+
+
+def artist_concerts(artist):
+    concerts = Concert.objects.filter(artist__name__iexact=artist)
+    concerts.filter()
+    return concerts
+
+def num_encore_songs(concerts):
+    return concerts.aggregate(Count('encores'))["encores__count"]
+
+def num_songs(concerts, num_encore_songs):
+    total_songs = num_encore_songs + concerts.aggregate(Count('sets__songs'))["sets__songs__count"]
+    return total_songs
+
+def covered_artists(concerts):
+    return concerts.all().values_list("sets__songs__orig_artist")\
+        .annotate(freq=Count("sets__songs__orig_artist")).order_by("freq").reverse()
 
 
 def basic_info(artist):
-    concerts = Concert.objects.filter(artist__name=artist)
-    num_concerts = len(concerts)
-    total_songs = 0
+    concerts = artist_concerts(artist)
     num_sets = []
     num_covers = 0
     songs = FrequencyDict()
@@ -17,13 +33,10 @@ def basic_info(artist):
     encores = FrequencyDict()
     covered_artists = FrequencyDict()
     artist_to_songs = defaultdict(list)
-    encore_length = []
     total_cover_plays = 0
     num_covered_plays = 0
     num_no_encores = 0
     for concert in concerts:
-        total_songs += concert.encores.count()
-        encore_length.append(concert.encores.count())
         if concert.encores.count():
             encores[" > ".join([song.song_name for song in concert.encores.all()])] += 1
         else:
@@ -42,7 +55,6 @@ def basic_info(artist):
             encores_songs[es] += 1
         num_sets.append(concert.sets.count())
         for s in concert.sets.all():
-            total_songs += s.songs.count()
             for song in s.songs.all():
                 if song.orig_artist.name != artist:
                     num_covers += 1
@@ -55,14 +67,12 @@ def basic_info(artist):
                     originals[song] += 1
                 songs[song] += 1
     usual_num_sets = max(set(num_sets), key=num_sets.count)
-    concert_len = round(total_songs / num_concerts, 2)
-    avg_covers = round(num_covers / num_concerts, 2)
+    avg_covers = round(num_covers / concerts.count(), 2)
     songs = ["{} - {}".format(song, num) for song, num in songs.sorted_top_tuples()]
     originals = ["{} - {}".format(song, num) for song, num in  originals.sorted_top_tuples()]
     encores_songs = encores_songs.sorted_top_tuples()
     num_covered_artists = len(set([song.orig_artist for song, _ in covers.sorted_top_tuples()]))
     all_covers = ["{} ({}) - {}".format(song, song.orig_artist, num) for song, num in  covers.sorted_top_tuples()]
-    avg_encore_length = round(sum(encore_length) / len(encore_length), 2)
     encores = encores.sorted_top_tuples()
     num_solo_encores = sum(1 for _, num in encores if num == 1)
     num_multiple_encores = sum(1 for _, num in encores if num > 1)
@@ -70,38 +80,37 @@ def basic_info(artist):
         song_freqs = []
         for song in set(_songs):
             song_freqs.append((song, covers[song]))
-        artist_to_songs[artist] = list(reversed(sorted(song_freqs, key=lambda x: x[1])))
-    return num_concerts, total_songs, usual_num_sets, concert_len, avg_covers, songs, originals, encores_songs,\
-           all_covers, total_cover_plays, avg_encore_length, encores, num_solo_encores, num_multiple_encores,\
+        artist_to_songs[artist] = list(sorted(song_freqs, key=lambda x: x[1], reverse=True))
+    return usual_num_sets, avg_covers, songs, originals, encores_songs,\
+           all_covers, total_cover_plays, encores, num_solo_encores, num_multiple_encores,\
            num_covered_artists, covered_artists.sorted_top_tuples(), artist_to_songs, num_no_encores
 
 
-def songs_by_day(artist):
+def songs_by_day(concerts, num_concerts):
     days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
     queries = range(1, len(days) + 1)
-    return _songs_by(artist, days, queries, "date__week_day", TOP_SONGS_BY_DAY)
+    return _songs_by(concerts, days, queries, "date__week_day", TOP_SONGS_BY_DAY, num_concerts)
 
 
-def songs_by_month(artist):
+def songs_by_month(concerts, num_concerts):
     months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October",
               "November", "December"]
     queries = range(1, len(months) + 1)
-    return _songs_by(artist, months, queries,  "date__month", TOP_SONGS_BY_MONTH)
+    return _songs_by(concerts, months, queries,  "date__month", TOP_SONGS_BY_MONTH, num_concerts)
 
 
-def songs_by_year(artist):
-    years = list(sorted(set([concert.date.year for concert in Concert.objects.filter(artist__name=artist).all()])))
-    return _songs_by(artist, years, years, "date__year", TOP_SONGS_BY_YEAR)
+def songs_by_year(concerts, num_concerts):
+    years = list(sorted(set([concert.date.year for concert in concerts.all()])))
+    return _songs_by(concerts, years, years, "date__year", TOP_SONGS_BY_YEAR, num_concerts)
 
 
-def _songs_by(artist, units, queries, query_str, num_songs):
-    concerts = Concert.objects.filter(artist__name=artist)
+def _songs_by(concerts, units, queries, query_str, num_songs, num_concerts):
     songs_list = []
     percents = []
     for i in queries:
         kwargs = {query_str: i}
         _concerts = concerts.filter(**kwargs)
-        percents.append(round(( _concerts.count() / concerts.count()) * 100, 2))
+        percents.append(round(( _concerts.count() / num_concerts) * 100, 2))
         frequencies = FrequencyDict()
         for concert in _concerts.all():
             for song in list(concert.encores.all()) + list([song for _set in concert.sets.all() for song in _set.songs.all()]):
@@ -129,9 +138,8 @@ def _songs_by(artist, units, queries, query_str, num_songs):
     return zip(units, songs_list, percents)
 
 
-def set_info(artist, num_sets):
-    concerts = Concert.objects.filter(artist__name=artist)
-    concerts_usual_sets = [concert for concert in concerts if len(concert.sets.all()) == num_sets]
+def set_info(concerts, num_sets):
+    concerts_usual_sets = concerts.annotate(num_sets=Count('sets')).filter(num_sets=num_sets)
     set_lengths = [[] for _ in range(num_sets)]
     sets = [FrequencyDict() for _ in range(num_sets)]
     common_sets = [[] for _ in range(num_sets)]

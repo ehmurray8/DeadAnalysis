@@ -89,14 +89,16 @@
     <h3>All Covered Artists - {{ total_artists_covered }}</h3>
 
     <ol>
-        {% for artist, num in all_covered_artists %}
-            <li>{{ artist }} - {{ num }}
-                <ol>
-                {% for song, num_song in artist_to_songs[artist] %}
-                    <li>{{ song }} - {{ num_song }}</li>
-                {% endfor %}
-                </ol>
-            </li>
+        {% for _artist, num in all_covered_artists %}
+            {% if _artist != artist %}
+                <li>{{ artist }} - {{ num }}
+                    <ol>
+                    {% for song, num_song in artist_to_songs[artist] %}
+                        <li>{{ song }} - {{ num_song }}</li>
+                    {% endfor %}
+                    </ol>
+                </li>
+            {% endif %}
         {% endfor %}
     </ol>
 
